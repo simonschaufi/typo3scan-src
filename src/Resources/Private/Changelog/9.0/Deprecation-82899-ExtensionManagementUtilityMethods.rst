@@ -11,13 +11,13 @@ See :issue:`82899`
 Description
 ===========
 
-The following methods have been marked as deprecated in :php:`ExtensionManagementUtility`
+The following methods have been marked as deprecated in :php-short:`\TYPO3\CMS\Core\Utility\ExtensionManagementUtility`
 
 * :php:`siteRelPath()`
 * :php:`getExtensionKeyByPrefix()`
 * :php:`removeCacheFiles()`
 
-Additionally the second method parameter of :php:`ExtensionManagementUtility::isLoaded()` to
+Additionally the second method parameter of :php-short:`\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded()` to
 throw an exception when an extension is not loaded, has been marked as deprecated, and should not
 be used anymore.
 
@@ -25,7 +25,7 @@ be used anymore.
 Impact
 ======
 
-Calling any of the methods or :php:`isLoaded()` with a second argument set explictly will trigger
+Calling any of the methods or :php:`isLoaded()` with a second argument set explicitly will trigger
 a deprecation message.
 
 
@@ -38,8 +38,8 @@ Any TYPO3 installation with an extension calling any of the methods above.
 Migration
 =========
 
-Use :php:`PathUtility::stripPathSitePrefix(ExtensionManagementUtility::extPath($extensionKey))`
-instead of :php:`ExtensionManagementUtility::siteRelPath()`.
+Use :php-short:`\TYPO3\CMS\Core\Utility\PathUtility::stripPathSitePrefix(ExtensionManagementUtility::extPath($extensionKey))`
+instead of :php-short:`\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::siteRelPath()`.
 
 Instead of calling :php:`getExtensionKeyByPrefix()` use the extension key directly.
 

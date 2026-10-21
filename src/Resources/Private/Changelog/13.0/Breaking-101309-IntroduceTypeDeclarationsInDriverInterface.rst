@@ -25,7 +25,7 @@ In consequence, all implementations of :php:`\TYPO3\CMS\Core\Resource\Driver\Dri
 to reflect those changes and add the same return and param type declarations.
 
 In case, any of the Core implementations are extended, overridden methods might need to be adjusted.
-The Core classes, implementing :php:`\TYPO3\CMS\Core\Resource\DriverInterface`, are:
+The Core classes, implementing :php:`\TYPO3\CMS\Core\Resource\Driver\DriverInterface`, are:
 
 - :php:`\TYPO3\CMS\Core\Resource\Driver\AbstractDriver`
 - :php:`\TYPO3\CMS\Core\Resource\Driver\AbstractHierarchicalFilesystemDriver`
@@ -36,7 +36,7 @@ Concerning removed method :php:`\TYPO3\CMS\Core\Resource\Driver\AbstractDriver::
 Said method didn't sanitize at all, it didn't respect the given :php:`$charset` param and simply
 returned the input string. Abstract classes MAY fulfill the interface contract but if they do so,
 they MUST do it right. There is no benefit in fulfilling it just signature wise, it MUST fulfill
-it functional wise and in this case it didn't. That's why :php:`LocalDriver`
+it functional wise and in this case it didn't. That's why :php-short:`\TYPO3\CMS\Core\Resource\Driver\LocalDriver`
 reimplements :php:`sanitizeFileName()` completely.
 
 As a consequence of this removal, all classes that extend either
@@ -48,7 +48,7 @@ implement method :php:`sanitizeFileName()`.
 Affected installations
 ======================
 
-All installations that implement :php:`\TYPO3\CMS\Core\Resource\DriverInterface` or that
+All installations that implement :php:`\TYPO3\CMS\Core\Resource\Driver\DriverInterface` or that
 extend either :php:`\TYPO3\CMS\Core\Resource\Driver\AbstractDriver` or
 :php:`\TYPO3\CMS\Core\Resource\Driver\AbstractHierarchicalFilesystemDriver`.
 

@@ -20,7 +20,7 @@ are being unused, which is quite a bad API.
 Impact
 ======
 
-Calling the PHP method :php:`BackendUtility::thumbCode()` will
+Calling the PHP method :php-short:`\TYPO3\CMS\Backend\Utility\BackendUtility::thumbCode()` will
 trigger a PHP deprecation warning.
 
 Affected installations
@@ -62,7 +62,7 @@ This means the relevant parts are:
 
     // Process file with cropping configuration if not missing
     $fileReference->getOriginalFile()->process(
-        ProcessedFile::CONTEXT_IMAGEPREVIEW,// ProcessedFile::CONTEXT_IMAGECROPSCALEMASK if cropArea is defiend
+        ProcessedFile::CONTEXT_IMAGEPREVIEW,// ProcessedFile::CONTEXT_IMAGECROPSCALEMASK if cropArea is defined
         [
             'width' => '...',
             'height' => '...',

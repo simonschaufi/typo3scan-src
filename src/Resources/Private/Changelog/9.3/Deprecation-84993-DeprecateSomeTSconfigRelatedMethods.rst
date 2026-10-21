@@ -13,24 +13,24 @@ Description
 
 Some user TSconfig related methods have been deprecated:
 
-* :php:`TYPO3\CMS\core\Authentication\BackendUserAuthentication->getTSConfigVal()`
-* :php:`TYPO3\CMS\core\Authentication\BackendUserAuthentication->getTSConfigProp()`
+* :php:`TYPO3\CMS\Core\Authentication\BackendUserAuthentication->getTSConfigVal()`
+* :php:`TYPO3\CMS\Core\Authentication\BackendUserAuthentication->getTSConfigProp()`
 
 Changed method signatures:
 
-* :php:`TYPO3\CMS\core\Authentication\BackendUserAuthentication->getTSConfig()`, no argument allowed any longer
+* :php:`TYPO3\CMS\Core\Authentication\BackendUserAuthentication->getTSConfig()`, no argument allowed any longer
 
 Some page TSconfig related methods have been marked as deprecated:
 
-* :php:`TYPO3\CMS\backend\Utility\BackendUtility::getModTSconfig()`
-* :php:`TYPO3\CMS\backend\Utility\BackendUtility::unsetMenuItems()`
-* :php:`TYPO3\CMS\backend\Tree\View\PagePositionMap->getModConfig()`
-* :php:`TYPO3\CMS\core\DataHandling\DataHandler->getTCEMAIN_TSconfig()`
+* :php:`TYPO3\CMS\Backend\Utility\BackendUtility::getModTSconfig()`
+* :php:`TYPO3\CMS\Backend\Utility\BackendUtility::unsetMenuItems()`
+* :php:`TYPO3\CMS\Backend\Tree\View\PagePositionMap->getModConfig()`
+* :php:`TYPO3\CMS\Core\DataHandling\DataHandler->getTCEMAIN_TSconfig()`
 
 These properties have been set to protected, should not be used any longer and trigger a deprecation error on access:
 
-* :php:`TYPO3\CMS\backend\Tree\View\PagePositionMap->getModConfigCache`
-* :php:`TYPO3\CMS\backend\Tree\View\PagePositionMap->modConfigStr`
+* :php:`TYPO3\CMS\Backend\Tree\View\PagePositionMap->getModConfigCache`
+* :php:`TYPO3\CMS\Backend\Tree\View\PagePositionMap->modConfigStr`
 
 
 Impact
@@ -49,7 +49,7 @@ will find affected code occurrences in extensions.
 Migration
 =========
 
-Change user TSconfig related calls to use :php:`BackendUserAuthentication->getTSConfig()`
+Change user TSconfig related calls to use :php-short:`\TYPO3\CMS\Core\Authentication\BackendUserAuthentication->getTSConfig()`
 instead, it comes with a slightly changed return syntax.
 
 :php:`getTSConfig()` without arguments simply returns the entire user TSconfig as array, similar to other
@@ -90,7 +90,7 @@ PHP notice level warnings::
     $value = (array)($backendUser->getTSConfig()['options.']['somePartWithSubToggles.'] ?? []);
 
 
-Change :php:`BackendUtility->getModTSconfig()` related calls to use :php:`BackendUtility::getPagesTSconfig($pid)` instead.
+Change :php-short:`\TYPO3\CMS\Backend\Utility\BackendUtility->getModTSconfig()` related calls to use :php-short:`\TYPO3\CMS\Backend\Utility\BackendUtility::getPagesTSconfig($pid)` instead.
 Note this method does not return the 'properties' and 'value' sub array as :php:`->getModTSconfig()` did::
 
     // Switch an old getModTSconfig() to getPagesTSConfig() for array of properties:
@@ -101,7 +101,7 @@ Note this method does not return the 'properties' and 'value' sub array as :php:
     $configArray = BackendUtility::getModTSconfig($pid, 'TCEFORM.sys_dmail_group.select_categories.PAGE_TSCONFIG_IDLIST');
     $configArray['value'] = BackendUtility::getPagesTSconfig($pid)['TCEFORM.']['sys_dmail_group.']['select_categories.']['PAGE_TSCONFIG_IDLIST'] ?? null;
 
-Methods :php:`BackendUtility::unsetMenuItems()` and :php:`DataHandler->getTCEMAIN_TSconfig()` have been rarely used
+Methods :php-short:`\TYPO3\CMS\Backend\Utility\BackendUtility::unsetMenuItems()` and :php-short:`\TYPO3\CMS\Core\DataHandling\DataHandler->getTCEMAIN_TSconfig()` have been rarely used
 and are dropped without substitution. Copy the code into consuming methods if you really need them.
 
 .. index:: Backend, PHP-API, TSConfig, FullyScanned

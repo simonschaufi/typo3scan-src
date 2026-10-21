@@ -21,7 +21,7 @@ Impact and affected installations
 =================================
 
 TYPO3 installations using
-:php:`PathUtility::getPublicResourceWebPath($extResource)` will receive a
+:php-short:`\TYPO3\CMS\Core\Utility\PathUtility::getPublicResourceWebPath($extResource)` will receive a
 deprecation message for each call of this method.
 
 Migration
@@ -47,9 +47,9 @@ After:
     :caption: MyClass
 
     use TYPO3\CMS\Core\Http\ServerRequestInterface;
-    use TYPO3\CMS\Core\Resource\SystemResourceFactory;
-    use TYPO3\CMS\Core\Resource\SystemResourcePublisherInterface;
-    use TYPO3\CMS\Core\Resource\UriGenerationOptions;
+    use TYPO3\CMS\Core\SystemResource\SystemResourceFactory;
+    use TYPO3\CMS\Core\SystemResource\Publishing\SystemResourcePublisherInterface;
+    use TYPO3\CMS\Core\SystemResource\Publishing\UriGenerationOptions;
 
     public function __construct(
         private readonly SystemResourceFactory $systemResourceFactory,

@@ -15,9 +15,8 @@ Description
 configured types of content elements (referencing :sql:`tt_content.CType` with names like "text",
 "textmedia", "felogin_pi1" and so on) in backend layout columns (:sql:`colPos`): The two
 keys :typoscript:`allowedContentTypes` and :typoscript:`disallowedContentTypes` add allow and
-deny lists on column level. These settings can be set with Page TSConfig based backend layouts,
-Database based backend layouts do not allow configuring this value at the moment, but this will
-be added soon.
+deny lists on column level. These settings can be set with Page TSConfig based backend layouts
+and with the grid editor of database based backend layouts.
 
 Example for a backend layout with two rows and two columns configured using Page TSConfig:
 
@@ -92,7 +91,7 @@ are given, :typoscript:`allowed.CType` is ignored.
                       CType = header, textmedia
     [...]
 
-Codewise, the PSR-14 event :php:`ManipulateBackendLayoutColPosConfigurationForPageEvent` has been added. It allows manipulation
+Codewise, the PSR-14 event :php-short:`\TYPO3\CMS\Backend\View\Event\ManipulateBackendLayoutColPosConfigurationForPageEvent` has been added. It allows manipulation
 of the calculated column configuration. It is marked :php:`@internal` and thus needs to be used with care since it may
 change in the future without further note: The event is not dispatched as systematically as it should be, but refactoring
 the surrounding code can probably not be provided with TYPO3 v14 anymore. Extensions like ext:container however

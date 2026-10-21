@@ -12,7 +12,7 @@ Description
 ===========
 
 The helper method
-:php:`TYPO3\CMS\Core\Utility\GeneralUtility\GeneralUtility::isFirstPartOfStr()`
+:php:`TYPO3\CMS\Core\Utility\GeneralUtility::isFirstPartOfStr()`
 has been marked as deprecated, as the newly available PHP built-in
 function :php:`str_starts_with()` can be used instead, which
 supports proper typing and is faster on PHP 8.0.
@@ -25,7 +25,7 @@ Core ships as dependency.
 Impact
 ======
 
-Calling :php:`GeneralUtility::isFirstPartOfStr()` will trigger a PHP :php:`E_USER_DEPRECATED` error.
+Calling :php-short:`\TYPO3\CMS\Core\Utility\GeneralUtility::isFirstPartOfStr()` will trigger a PHP :php:`E_USER_DEPRECATED` error.
 
 
 Affected Installations
@@ -39,7 +39,7 @@ via TYPO3's extension scanner will show any matches.
 Migration
 =========
 
-Replace all calls of :php:`GeneralUtility::isFirstPartOfStr()` with
+Replace all calls of :php-short:`\TYPO3\CMS\Core\Utility\GeneralUtility::isFirstPartOfStr()` with
 :php:`str_starts_with()` to avoid deprecation warnings and to keep
 your code up-to-date.
 

@@ -15,9 +15,9 @@ The following PHP classes that have been previously deprecated for v9 have been 
 
 * :php:`TYPO3\CMS\Adminpanel\View\AdminPanelView`
 * :php:`TYPO3\CMS\Backend\Controller\LoginFramesetController`
-* :php:`TYPO3\CMS\Backend\Form\Form\FieldWizard\FileThumbnails`
-* :php:`TYPO3\CMS\Backend\Form\Form\FieldWizard\FileTypeList`
-* :php:`TYPO3\CMS\Backend\Form\Form\FieldWizard\FileUpload`
+* :php:`TYPO3\CMS\Backend\Form\FieldWizard\FileThumbnails`
+* :php:`TYPO3\CMS\Backend\Form\FieldWizard\FileTypeList`
+* :php:`TYPO3\CMS\Backend\Form\FieldWizard\FileUpload`
 * :php:`TYPO3\CMS\Backend\Http\AjaxRequestHandler`
 * :php:`TYPO3\CMS\Backend\Module\AbstractFunctionModule`
 * :php:`TYPO3\CMS\Backend\Module\AbstractModule`
@@ -53,14 +53,14 @@ The following PHP classes that have been previously deprecated for v9 have been 
 * :php:`TYPO3\CMS\Extbase\Mvc\Cli\RequestBuilder`
 * :php:`TYPO3\CMS\Extbase\Mvc\Cli\RequestHandler`
 * :php:`TYPO3\CMS\Extbase\Mvc\Cli\Response`
-* :php:`TYPO3\CMS\Extbase\Mvc\Cli\Controller\CommandController`
+* :php:`TYPO3\CMS\Extbase\Mvc\Controller\CommandController`
 * :php:`TYPO3\CMS\Extbase\Mvc\Exception\AmbiguousCommandIdentifierException`
 * :php:`TYPO3\CMS\Extbase\Mvc\Exception\CommandException`
 * :php:`TYPO3\CMS\Extbase\Mvc\Exception\NoSuchCommandException`
 * :php:`TYPO3\CMS\Extbase\Scheduler\FieldProvider`
 * :php:`TYPO3\CMS\Extbase\Scheduler\Task`
 * :php:`TYPO3\CMS\Extbase\Scheduler\TaskExecutor`
-* :php:`TYPO3\CMS\Extbase\Tests\Unit\Validation\Validator\AbstractValidatorTestcase`
+* :php:`TYPO3\CMS\Extbase\Tests\Unit\Validation\Validator\AbstractValidatorTest`
 * :php:`TYPO3\CMS\Extbase\Validation\Validator\RawValidator`
 * :php:`TYPO3\CMS\Extensionmanager\Command\ExtensionCommandController`
 * :php:`TYPO3\CMS\Form\Domain\Model\FormElements\GridContainer`
@@ -81,7 +81,7 @@ The following PHP classes that have been previously deprecated for v9 have been 
 The following PHP interfaces that have been previously deprecated for v9 have been removed:
 
 * :php:`TYPO3\CMS\Adminpanel\View\AdminPanelViewHookInterface`
-* :php:`TYPO3\CMS\Extbase\Mvc\Cli\Controller\CommandControllerInterface`
+* :php:`TYPO3\CMS\Extbase\Mvc\Controller\CommandControllerInterface`
 * :php:`TYPO3\CMS\Core\Crypto\PasswordHashing\ComposedPasswordHashInterface`
 * :php:`TYPO3\CMS\Frontend\Http\UrlHandlerInterface`
 
@@ -178,7 +178,7 @@ The following PHP class aliases that have been previously deprecated for v9 have
 * :php:`TYPO3\CMS\Saltedpasswords\Salt\Pbkdf2Salt`
 * :php:`TYPO3\CMS\Saltedpasswords\Salt\PhpassSalt`
 * :php:`TYPO3\CMS\Saltedpasswords\SaltedPasswordService`
-* :php:`TYPO3\CMS\Saltedpasswords\Utility\ExensionManagerConfigurationUtility`
+* :php:`TYPO3\CMS\Saltedpasswords\Utility\ExtensionManagerConfigurationUtility`
 * :php:`TYPO3\CMS\Saltedpasswords\Utility\SaltedPasswordsUtility`
 * :php:`TYPO3\CMS\Sv\AbstractAuthenticationService`
 * :php:`TYPO3\CMS\Sv\AuthenticationService`
@@ -227,7 +227,7 @@ The following PHP class methods that have been previously deprecated for v9 have
 * :php:`TYPO3\CMS\Backend\Controller\EditDocumentController->openInNewWindowLink()`
 * :php:`TYPO3\CMS\Backend\Controller\EditDocumentController->setDocument()`
 * :php:`TYPO3\CMS\Backend\Controller\EditDocumentController->shortCutLink()`
-* :php:`TYPO3\CMS\Backend\Controller\EditFileController->getButtons()`
+* :php:`TYPO3\CMS\Backend\Controller\File\EditFileController->getButtons()`
 * :php:`TYPO3\CMS\Backend\Controller\File\FileController->finish()`
 * :php:`TYPO3\CMS\Backend\Controller\File\FileUploadController->main()`
 * :php:`TYPO3\CMS\Backend\Controller\File\FileUploadController->renderUploadForm()`
@@ -285,8 +285,8 @@ The following PHP class methods that have been previously deprecated for v9 have
 * :php:`TYPO3\CMS\Core\Authentication\BackendUserAuthentication->getTSConfigVal()`
 * :php:`TYPO3\CMS\Core\Authentication\BackendUserAuthentication->isPSet()`
 * :php:`TYPO3\CMS\Core\Authentication\BackendUserAuthentication->simplelog()`
-* :php:`TYPO3\CMS\Core\Cache\PhpFrontend->getByTag()`
-* :php:`TYPO3\CMS\Core\Cache\VariableFrontend->getByTag()`
+* :php:`TYPO3\CMS\Core\Cache\Frontend\PhpFrontend->getByTag()`
+* :php:`TYPO3\CMS\Core\Cache\Frontend\VariableFrontend->getByTag()`
 * :php:`TYPO3\CMS\Core\Charset\CharsetConverter->convArray()`
 * :php:`TYPO3\CMS\Core\Charset\CharsetConverter->convCaseFirst()`
 * :php:`TYPO3\CMS\Core\Charset\CharsetConverter->crop()`
@@ -660,7 +660,7 @@ The following public class properties have been dropped:
 * :php:`TYPO3\CMS\Frontend\ContentObject\Menu\AbstractMenuContentObject->imgNamePrefix`
 * :php:`TYPO3\CMS\Frontend\ContentObject\Menu\AbstractMenuContentObject->INPfixMD5`
 * :php:`TYPO3\CMS\Frontend\ContentObject\Menu\AbstractMenuContentObject->nameAttribute`
-* :php:`TYPO3C\MS\Frontend\ContentObject\Menu\AbstractMenuContentObject->WMfreezePrefix`
+* :php:`TYPO3\CMS\Frontend\ContentObject\Menu\AbstractMenuContentObject->WMfreezePrefix`
 * :php:`TYPO3\CMS\Frontend\Page\PageRepository->error_getRootLine_failPid`
 * :php:`TYPO3\CMS\Frontend\Page\PageRepository->error_getRootLine`
 * :php:`TYPO3\CMS\Frontend\Page\PageRepository->versioningPreview`
@@ -1441,7 +1441,7 @@ The following features have been removed:
 * TCA auto migration from core v6 to core v7 compatible TCA
 * TCA auto migration from core v7 to core v8 compatible TCA
 * TCA :php:`type='group'` with :php:`internal_type='file'` and :php:`internal_type='file_reference`
-* Cache creation using :php:`\TYPO3\CMS\Cache\CacheManger` during :file:`ext_localconf.php` loading
+* Cache creation using :php:`\TYPO3\CMS\Core\Cache\CacheManager` during :file:`ext_localconf.php` loading
 * All install tool upgrade wizards upgrading from v7 to v8
 * The array key :php:`uploadfolder` in extensions :file:`ext_emconf.php` files is obsolete and ignored.
 * Standalone install tool entry point :file:`typo3/install/index.php` has been dropped, use :file:`typo3/install.php` instead

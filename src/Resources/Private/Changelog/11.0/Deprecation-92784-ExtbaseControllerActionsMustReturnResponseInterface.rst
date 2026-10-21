@@ -36,12 +36,14 @@ but also PSR-17 (https://www.php-fig.org/psr/psr-17/),
 the PSR-17 factories should be used. Both the :php:`$responseFactory` as
 well as the :php:`$streamFactory` are available in all extbase controllers.
 The :php:`$responseFactory` can be used to create a blank response object
-whose content and headers can be set freely. The content can therfore be
+whose content and headers can be set freely. The content can therefore be
 set using the :php:`$streamFactory`.
 
 Example:
 
 .. code-block:: php
+
+   use Psr\Http\Message\ResponseInterface;
 
    public function listAction(): ResponseInterface
    {
@@ -54,12 +56,13 @@ Example:
    }
 
 This example only shows the most common use case. It causes html with a :html:`Content-Type: text/html` header and
-http code `200 Ok` returned as the response to the client.
+HTTP status code `200 OK` to be returned as the response to the client.
 
 .. tip::
 
-   Using the factory is a clean architectural solution but it's a lot of new code when migration from returning nothing at all.
-   To ease the migration path, method :php:`htmlResponse(string $html = null)` has been introduced which allows for a quite small change.
+   Using the factory is a clean architectural solution but it's a lot of new code for a migration
+   from returning nothing at all. To ease the migration path the method :php:`htmlResponse(string $html = null)`
+   has been introduced which makes a quite small change possible.
    When called without an argument, said method renders the current view.
 
    .. code-block:: php
@@ -102,7 +105,7 @@ Example:
    Since Extbase uses PSR-7 responses, you should make yourself familiar with its API.
    Documentation and more information regarding PSR-7 responses can be found here: https://www.php-fig.org/psr/psr-7/#33-psrhttpmessageresponseinterface
 
-In case you are using the :php:`JsonView` in your extbase controller, you may
+In case you are using the :php-short:`\TYPO3\CMS\Extbase\Mvc\View\JsonView` in your extbase controller, you may
 want to ease the migration path with the new :php:`jsonResponse(string $json = null)`
 method. Similar to :php:`htmlResponse()`, this method creates a PSR-7 Response
 with the :html:`Content-Type: application/json` header and http code `200 Ok`.

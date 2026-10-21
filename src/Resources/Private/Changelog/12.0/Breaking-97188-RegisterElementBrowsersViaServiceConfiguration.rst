@@ -23,7 +23,7 @@ identifier has to be provided by the service directly using the
 :php:`ElementBrowserInterface`.
 
 In case a custom `element browser` extends
-:php:`\TYPO3\CMS\Backend\Browser\AbstractElementBrowser`,
+:php:`\TYPO3\CMS\Backend\ElementBrowser\AbstractElementBrowser`,
 only the class property `$identifier` has to be set, e.g.
 :php:`protected string $identifier = 'my_browser';`.
 
@@ -62,6 +62,6 @@ add the tag :yaml:`recordlist.elementbrowser` manually to your `element browser`
 
 Additionally, make sure to either implement
 :php:`public function getIdentifier(): string` or, in case your `element browser`
-extends :php:`AbstractElementBrowser`, to set the `$identifier` class property.
+extends :php-short:`\TYPO3\CMS\Backend\ElementBrowser\AbstractElementBrowser`, to set the `$identifier` class property.
 
 .. index:: Backend, LocalConfiguration, PHP-API, FullyScanned, ext:backend

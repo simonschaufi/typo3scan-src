@@ -27,8 +27,8 @@ fully capable of supporting absolute URLs, :php:`$relativeToCurrentScript`
 is now deprecated and will be removed in TYPO3 v12.
 
 This also affects the :php:`isRelativeToCurrentScript()` method in the
-:php:`GeneratePublicUrlForResourceEvent` event, as well as the
-:php:`OnlineMediaHelperInterface`.
+:php-short:`\TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent` event, as well as the
+:php-short:`\TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelperInterface`.
 
 Impact
 ======
@@ -41,7 +41,7 @@ will trigger a PHP :php:`E_USER_DEPRECATED` error. The extension scanner
 will detect such calls.
 
 Accessing :php:`isRelativeToCurrentScript()` on
-:php:`GeneratePublicUrlForResourceEvent` will trigger a PHP
+:php-short:`\TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent` will trigger a PHP
 :php:`E_USER_DEPRECATED` error. The extension scanner will detect
 such calls.
 
@@ -58,8 +58,8 @@ when calling :php:`getPublicUrl()` on a FAL object, for example
 :php:`\TYPO3\CMS\Core\Resource\Folder`.
 
 All installations which manually call :php:`getPublicUrl()` on an
-:php:`\TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelper`,
-for example :php:`\TYPO3\CMS\Core\Resource\Rendering\YoutubeRenderer`.
+:php:`\TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelperInterface`,
+for example :php:`\TYPO3\CMS\Core\Resource\Rendering\YouTubeRenderer`.
 
 All installation which access :php:`isRelativeToCurrentScript()` on the
 :php:`\TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent` event.
@@ -74,8 +74,8 @@ Remove the :php:`$relativeToCurrentScript` parameter from all calls to
 
 Remove the :php:`$relativeToCurrentScript` parameter from all manual calls
 to :php:`getPublicUrl()` on a
-:php:`\TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelper`,
-for example :php:`\TYPO3\CMS\Core\Resource\Rendering\YoutubeRenderer`.
+:php:`\TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelperInterface`,
+for example :php:`\TYPO3\CMS\Core\Resource\Rendering\YouTubeRenderer`.
 
 Remove all calls to
 :php:`\TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent->isRelativeToCurrentScript()`.

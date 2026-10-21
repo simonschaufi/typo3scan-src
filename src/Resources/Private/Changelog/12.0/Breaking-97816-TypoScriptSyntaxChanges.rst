@@ -41,7 +41,7 @@ Streamlined constants usage
 It has never been fully documented in which context "constants" :typoscript:`{$foo}`
 shall be used and which exact capabilities they have. The main TypoScript constants
 documentation within the :ref:`TypoScript Reference <t3tsref:typoscript-syntax-constants>` was partially
-outdated, and the :ref:`TSconfig documentation <t3tsconfig:Syntax>` claimed TSconfig
+outdated, and the :ref:`TSconfig documentation <t3tsref:Syntax>` claimed TSconfig
 is not constants aware at all, which isn't fully the case anymore. Let's sort out
 some details:
 
@@ -312,6 +312,15 @@ a whitespace between :typoscript:`=` and :typoscript:`<`:
 ..  code-block:: typoscript
 
     lib.nav.wrap = <ul id="nav">|</ul>
+
+Frontend TypoScript `temp.` top level object
+--------------------------------------------
+
+The Frontend TypoScript related top level object :typoscript:`temp` had special
+functionality until v12: Any TypoScript defined within was "temporary" at parse time
+and unset afterwards. It was not cached and could not be used as reference
+(:typoscript:`=<` operator). This special meaning has been removed, the key
+:typoscript:`temp` now works just like any other top level key.
 
 
 .. index:: Backend, Frontend, TSConfig, TypoScript, NotScanned, ext:core

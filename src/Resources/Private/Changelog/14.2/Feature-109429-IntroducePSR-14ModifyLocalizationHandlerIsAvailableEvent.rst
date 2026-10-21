@@ -20,12 +20,12 @@ The PSR-14 event
 is now introduced and dispatched in
 :php-short:`\TYPO3\CMS\Backend\Localization\LocalizationHandlerRegistry`
 to allow the availability state of a localization
-handler to be overridden based on :php-short:`\TYPO3\CMS\Backend\Localization\LocalizationInstructions\LocalizationInstructions`.
+handler to be overridden based on :php-short:`\TYPO3\CMS\Backend\Localization\LocalizationInstructions`.
 
 The event has the following properties:
 
 *   :php:`public readonly string $identifier`: String identifier returned by
-    :php:`LocalizationHandlerInterface::getIdentifier()` from the handler
+    :php-short:`\TYPO3\CMS\Backend\Localization\LocalizationHandlerInterface::getIdentifier()` from the handler
 *   :php:`public readonly string $className`: The concrete class name in case
     a handler has been XCLASSed without changing the identifier
 *   :php:`public readonly LocalizationInstructions $instructions`: The
@@ -47,7 +47,7 @@ Example
     namespace MyVendor\MyExtension\EventListener;
 
     use TYPO3\CMS\Backend\Localization\Event\ModifyLocalizationHandlerIsAvailableEvent;
-    use TYPO3\CMS\Backend\Localization\Handler\ManualLocalizationHandler;
+    use TYPO3\CMS\Backend\Localization\ManualLocalizationHandler;
     use TYPO3\CMS\Backend\Localization\LocalizationMode;
     use TYPO3\CMS\Core\Attribute\AsEventListener;
 

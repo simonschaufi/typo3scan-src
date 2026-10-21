@@ -15,13 +15,13 @@ Due to the introduction of the Schema API, several methods of
 :php:`\TYPO3\CMS\Backend\Utility\BackendUtility` that retrieve
 information from :php:`$GLOBALS['TCA']` have been deprecated:
 
-*   :php:`BackendUtility::getCommonSelectFields()`
-*   :php:`BackendUtility::getItemLabel()`
-*   :php:`BackendUtility::isTableLocalizable()`
-*   :php:`BackendUtility::isTableWorkspaceEnabled()`
-*   :php:`BackendUtility::isRootLevelRestrictionIgnored()`
-*   :php:`BackendUtility::isWebMountRestrictionIgnored()`
-*   :php:`BackendUtility::resolveFileReferences()`
+*   :php-short:`\TYPO3\CMS\Backend\Utility\BackendUtility::getCommonSelectFields()`
+*   :php-short:`\TYPO3\CMS\Backend\Utility\BackendUtility::getItemLabel()`
+*   :php-short:`\TYPO3\CMS\Backend\Utility\BackendUtility::isTableLocalizable()`
+*   :php-short:`\TYPO3\CMS\Backend\Utility\BackendUtility::isTableWorkspaceEnabled()`
+*   :php-short:`\TYPO3\CMS\Backend\Utility\BackendUtility::isRootLevelRestrictionIgnored()`
+*   :php-short:`\TYPO3\CMS\Backend\Utility\BackendUtility::isWebMountRestrictionIgnored()`
+*   :php-short:`\TYPO3\CMS\Backend\Utility\BackendUtility::resolveFileReferences()`
 
 Impact
 ======
@@ -57,7 +57,7 @@ getItemLabel
 ..  code-block:: php
 
     use TYPO3\CMS\Backend\Utility\BackendUtility;
-    use TYPO3\CMS\Core\Schema\TcaSchemaCapability;
+    use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
     use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 
     // Before
@@ -78,7 +78,7 @@ isTableLocalizable
 ..  code-block:: php
 
     use TYPO3\CMS\Backend\Utility\BackendUtility;
-    use TYPO3\CMS\Core\Schema\TcaSchemaCapability;
+    use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
     use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 
     // Before
@@ -96,7 +96,7 @@ isTableWorkspaceEnabled
 ..  code-block:: php
 
     use TYPO3\CMS\Backend\Utility\BackendUtility;
-    use TYPO3\CMS\Core\Schema\TcaSchemaCapability;
+    use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
     use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 
     // Before
@@ -114,7 +114,7 @@ isRootLevelRestrictionIgnored
 ..  code-block:: php
 
     use TYPO3\CMS\Backend\Utility\BackendUtility;
-    use TYPO3\CMS\Core\Schema\TcaSchemaCapability;
+    use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
     use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 
     // Before
@@ -134,7 +134,7 @@ isWebMountRestrictionIgnored
 ..  code-block:: php
 
     use TYPO3\CMS\Backend\Utility\BackendUtility;
-    use TYPO3\CMS\Core\Schema\TcaSchemaCapability;
+    use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
     use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 
     // Before

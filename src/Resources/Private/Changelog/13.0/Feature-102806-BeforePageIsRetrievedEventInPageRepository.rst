@@ -17,7 +17,7 @@ has been introduced, which serves as a more powerful replacement of the removed
 hook.
 
 The new event therefore allows to modify the resolving of page records within
-:php:`\TYPO3\CMS\Core\Domain\PageRepository->getPage()`.
+:php:`\TYPO3\CMS\Core\Domain\Repository\PageRepository->getPage()`.
 
 Impact
 ======
@@ -29,7 +29,7 @@ bypassing the default page resolving.
 To modify the incoming parameters, the following methods are available:
 
 - :php:`setPageId()`: Allows to set the :php:`$uid` of a page to resolve
-- :php:`setPage()`: Allows to set a :php:`Page` object which bypasses TYPO3 Core functionality
+- :php:`setPage()`: Allows to set a :php-short:`\TYPO3\CMS\Core\Domain\Page` object which bypasses TYPO3 Core functionality
 
 
 Example
@@ -61,6 +61,6 @@ Impact
 ======
 
 Using the new PSR-14 event, it's now possible to fully customize the page
-resolving in TYPO3's Core API class :php:`\TYPO3\CMS\Core\Domain\PageRepository`.
+resolving in TYPO3's Core API class :php:`\TYPO3\CMS\Core\Domain\Repository\PageRepository`.
 
 .. index:: PHP-API, ext:core

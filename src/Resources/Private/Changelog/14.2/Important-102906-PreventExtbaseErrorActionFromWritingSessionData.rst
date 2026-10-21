@@ -33,7 +33,7 @@ The implementation introduces two new public methods in
 
 Flash messages are transferred through
 :php-short:`\TYPO3\CMS\Extbase\Mvc\ExtbaseRequestParameters` when
-forwarding requests and are restored from `ExtbaseRequestParameters` in
+forwarding requests and are restored from :php-short:`\TYPO3\CMS\Extbase\Mvc\ExtbaseRequestParameters` in
 :php:`ActionController::initializeStateFromExtbaseRequestParameters()`.
 
 ..  hint::
@@ -46,4 +46,4 @@ forwarding requests and are restored from `ExtbaseRequestParameters` in
     :php:`\TYPO3\CMS\Extbase\Http\ForwardResponse` when forwarding
     requests from the error action.
 
-..  index:: Backend, Frontend, FullyScanned, ext:extbase
+..  index:: Backend, Frontend, ext:extbase
