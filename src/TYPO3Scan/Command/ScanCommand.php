@@ -63,6 +63,7 @@ class ScanCommand extends Command
                 new InputOption('templatePath', null, InputOption::VALUE_OPTIONAL, 'Path to template folder'),
                 new InputOption('ignore', null, InputOption::VALUE_OPTIONAL, 'Issue number(s) to ignore (comma-separated)'),
                 new InputOption('issue', null, InputOption::VALUE_OPTIONAL, 'Issue number(s) to show (comma-separated)'),
+                new InputOption('exclude', 'e', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Paths to be excluded'),
             ])
             ->setHelp(<<<EOT
 The <info>scan</info> command scans a path for deprecated code</info>.
@@ -93,6 +94,9 @@ Scan a folder and only show changes for issue #80929:
 
 Scan a folder and do NOT show changes for issue #80929 and #84289:
 <info>php typo3scan.phar scan --ignore 80929,84289 ~/tmp/source</info>
+
+Scan a folder and exclude some directory:
+<info>php typo3scan.phar scan --exclude var/cache ~/tmp/source</info>
 EOT
             );
     }
@@ -118,7 +122,7 @@ EOT
         $startTime = microtime(true);
         $format = $input->getOption('format') ?: 'plain';
         $path = realpath($input->getArgument('path'));
-        if (!is_dir($path)) {
+        if (! is_dir($path)) {
             $stdErr->writeln(sprintf('Path does not exist: "%s"', $input->getArgument('path')));
             return Command::FAILURE;
         }
@@ -140,8 +144,14 @@ EOT
             $basePath = $this->getExtPath($path) . DIRECTORY_SEPARATOR . $extension . DIRECTORY_SEPARATOR;
         }
 
+        $exclude = $input->getOption('exclude') ?: [];
+        if (! is_array($exclude)) {
+            $exclude = [$exclude];
+        }
+        $exclude = array_filter($exclude);
+
         $scanner = new ScannerService($version);
-        $directoryMatches = $scanner->scan($path);
+        $directoryMatches = $scanner->scan($path, $exclude);
 
         $directoryMatches = $this->filterByType($directoryMatches, $input);
         $directoryMatches = $this->filterByIndicators($directoryMatches, $input);
