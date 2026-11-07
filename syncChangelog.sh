@@ -4,7 +4,7 @@
 #
 #   source: .temp/Changelog                     (symlink -> local TYPO3 core checkout,
 #                                                typo3/sysext/core/Documentation/Changelog)
-#   target: src/Resources/Private/Changelog
+#   target: resources/changelog
 #
 # The target is mirrored from the source:
 #   - files that only exist in the source are added
@@ -13,7 +13,7 @@
 # Every change is reported, grouped by added / updated / removed.
 #
 # Afterwards ./updateLinks.sh is run (unless --no-links is given), because
-# src/Resources/Private/links.txt is generated from the target directory and
+# resources/links.txt is generated from the target directory and
 # must stay in sync with it.
 #
 # Usage: ./syncChangelog.sh [-n|--dry-run] [--no-links] [-h|--help]
@@ -25,7 +25,7 @@ export LC_ALL=C
 
 readonly ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SOURCE_DIR="${ROOT_DIR}/.temp/Changelog"
-readonly TARGET_DIR="${ROOT_DIR}/src/Resources/Private/Changelog"
+readonly TARGET_DIR="${ROOT_DIR}/resources/changelog"
 readonly LINKS_SCRIPT="${ROOT_DIR}/updateLinks.sh"
 
 dry_run=false
@@ -35,7 +35,7 @@ usage() {
     cat <<'EOF'
 Usage: ./syncChangelog.sh [-n|--dry-run] [--no-links] [-h|--help]
 
-Synchronize src/Resources/Private/Changelog from .temp/Changelog
+Synchronize resources/changelog from .temp/Changelog
 and report added/updated/removed files.
 
 Options:
@@ -164,4 +164,4 @@ elif $dry_run && ((added_count + removed_count > 0)); then
     echo "note: ./updateLinks.sh would have to be run after applying this."
 fi
 
-git add src/Resources/Private/Changelog
+git add resources/changelog

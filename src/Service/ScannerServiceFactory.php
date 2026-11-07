@@ -21,10 +21,10 @@ use SimonSchaufi\TYPO3Scan\Registry\MatcherRegistry;
  * Injecting this factory into ScanCommand keeps the command testable:
  * tests can substitute a fake factory without touching the real scanner.
  */
-class ScannerServiceFactory
+readonly class ScannerServiceFactory
 {
     public function __construct(
-        private readonly MatcherRegistry $matcherRegistry = new MatcherRegistry(),
+        private MatcherRegistry $matcherRegistry,
     ) {
     }
 

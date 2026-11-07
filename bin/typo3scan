@@ -21,6 +21,7 @@ foreach ([__DIR__ . '/../../../autoload.php', __DIR__ . '/../../../../autoload.p
 
 use SimonSchaufi\TYPO3Scan\Command\ScanCommand;
 use SimonSchaufi\TYPO3Scan\Console\Application;
+use SimonSchaufi\TYPO3Scan\Registry\MatcherRegistry;
 use SimonSchaufi\TYPO3Scan\ResultFilter\DirectoryResultFilter;
 use SimonSchaufi\TYPO3Scan\Service\ScannerServiceFactory;
 use SimonSchaufi\TYPO3Scan\Service\TemplatePathResolver;
@@ -32,7 +33,7 @@ $app->addCommand(new ScanCommand(
     new DirectoryResultFilter(),
     new ScanStatistics(),
     new Filesystem(),
-    new ScannerServiceFactory(),
-    new TemplatePathResolver(__DIR__ . '/../src/Resources/Private/Templates'),
+    new ScannerServiceFactory(new MatcherRegistry()),
+    new TemplatePathResolver(__DIR__ . '/../resources/templates'),
 ));
 exit($app->run());

@@ -43,7 +43,7 @@ final class GetChangeTitleFilter
         static $restFiles = [];
         if (empty($restFiles)) {
             $restFinder = new Finder();
-            $restFilesList = $restFinder->files()->in(__DIR__ . '/../../../Resources/Private/Changelog')->name('*.rst');
+            $restFilesList = $restFinder->files()->in(__DIR__ . '/../../../resources/Changelog')->name('*.rst');
             foreach ($restFilesList as $restFile) {
                 $pathName = $restFile->getPathname();
                 $restFiles[basename($pathName)] = $pathName;

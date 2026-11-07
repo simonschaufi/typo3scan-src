@@ -54,8 +54,8 @@ class ScannerService
     private function setMatcherBundlePath(): void
     {
         foreach ([
-            __DIR__ . '/../../../vendor/simonschaufi/typo3-cms-scanner/config/Matcher/',
-            __DIR__ . '/../../../../../simonschaufi/typo3-cms-scanner/config/Matcher/',
+            __DIR__ . '/../../vendor/simonschaufi/typo3-cms-scanner/config/Matcher/',
+            __DIR__ . '/../../../../simonschaufi/typo3-cms-scanner/config/Matcher/',
         ] as $file) {
             if (is_dir($file)) {
                 $this->matcherBundleBasePath = $file;

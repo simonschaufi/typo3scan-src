@@ -224,7 +224,7 @@ final class ScanCommandTest extends TestCase
             new ScanStatistics(),
             new Filesystem(),
             $fakeFactory,
-            new TemplatePathResolver(__DIR__ . '/../../../src/Resources/Private/Templates'),
+            new TemplatePathResolver(__DIR__ . '/../../../resources/templates'),
         );
     }
 }

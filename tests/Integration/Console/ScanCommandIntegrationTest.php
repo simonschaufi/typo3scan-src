@@ -16,6 +16,7 @@ namespace SimonSchaufi\TYPO3Scan\Tests\Integration\Console;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use SimonSchaufi\TYPO3Scan\Command\ScanCommand;
+use SimonSchaufi\TYPO3Scan\Registry\MatcherRegistry;
 use SimonSchaufi\TYPO3Scan\ResultFilter\DirectoryResultFilter;
 use SimonSchaufi\TYPO3Scan\Service\ScannerServiceFactory;
 use SimonSchaufi\TYPO3Scan\Service\TemplatePathResolver;
@@ -52,8 +53,8 @@ final class ScanCommandIntegrationTest extends TestCase
             new DirectoryResultFilter(),
             new ScanStatistics(),
             new Filesystem(),
-            new ScannerServiceFactory(),
-            new TemplatePathResolver(__DIR__ . '/../../../src/Resources/Private/Templates'),
+            new ScannerServiceFactory(new MatcherRegistry()),
+            new TemplatePathResolver(__DIR__ . '/../../../resources/templates'),
         );
         $app = new Application();
         $app->addCommand($command);

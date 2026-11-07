@@ -47,7 +47,7 @@ final class GetOnlineDocumentFilter
         }
         $onlineDocument = '';
         $base = 'https://docs.typo3.org/c/typo3/cms-core/main/en-us/';
-        $links = file(__DIR__ . '/../../../Resources/Private/links.txt');
+        $links = file(__DIR__ . '/../../../resources/links.txt');
         if ($links === false) {
             $links = [];
         }
