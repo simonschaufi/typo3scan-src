@@ -714,4 +714,57 @@ final class ScanCommandIntegrationTest extends TestCase
 
         self::assertMatchesRegularExpression($pattern, $this->tester->getDisplay());
     }
+
+    // -------------------------------------------------------------------------
+    // --exclude option: integration tests
+    // -------------------------------------------------------------------------
+
+    public function testExcludeSingleDirectoryAsStringRemovesItsMatchesFromOutput(): void
+    {
+        // Excluding the Controller directory removes the two weak matches
+        // (addCssFile + addJavascript) so only the RemoveXSS match remains.
+        $exitCode = $this->tester->execute(
+            [
+                'path' => self::FIXTURE_PATH,
+                '--target' => '12',
+                '--format' => 'plain',
+                '--exclude' => ['Classes/Controller'],
+            ],
+            [
+                'capture_stderr_separately' => true,
+            ],
+        );
+
+        $output = $this->tester->getDisplay();
+
+        self::assertSame(1, $exitCode, 'Still exits non-zero because RemoveXSS was found');
+        self::assertStringContainsString('Found 1 match', $output);
+        self::assertStringContainsString('RemoveXSS', $output);
+        self::assertStringNotContainsString('addCssFile', $output);
+        self::assertStringNotContainsString('addJavascript', $output);
+    }
+
+    public function testExcludeMultipleDirectoriesAsArrayRemovesAllTheirMatches(): void
+    {
+        // Excluding both sub-directories means no PHP files are scanned at all.
+        $exitCode = $this->tester->execute(
+            [
+                'path' => self::FIXTURE_PATH,
+                '--target' => '12',
+                '--format' => 'plain',
+                '--exclude' => ['Classes/Controller', 'Classes/Utility'],
+            ],
+            [
+                'capture_stderr_separately' => true,
+            ],
+        );
+
+        $output = $this->tester->getDisplay();
+
+        self::assertSame(0, $exitCode, 'Exits with 0 because no matches remain');
+        self::assertStringContainsString('Found 0 matches', $output);
+        self::assertStringNotContainsString('RemoveXSS', $output);
+        self::assertStringNotContainsString('addCssFile', $output);
+        self::assertStringNotContainsString('addJavascript', $output);
+    }
 }

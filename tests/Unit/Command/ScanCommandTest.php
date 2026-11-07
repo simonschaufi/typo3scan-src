@@ -113,20 +113,6 @@ final class ScanCommandTest extends TestCase
     // -------------------------------------------------------------------------
 
     /**
-     * @param array{basePath: string, extensionName: string} $expected
-     */
-    #[DataProvider('extPathProvider')]
-    public function testResolveExtensionContextParsesExtPath(string $input, array $expected): void
-    {
-        $command = $this->makeCommand();
-
-        $method = new \ReflectionMethod($command, 'resolveExtensionContext');
-        $actual = $method->invoke($command, $input);
-
-        self::assertSame($expected, $actual);
-    }
-
-    /**
      * @return iterable<string, array{0: string, 1: array{basePath: string, extensionName: string}}>
      */
     public static function extPathProvider(): iterable
@@ -156,9 +142,34 @@ final class ScanCommandTest extends TestCase
         ];
     }
 
+    /**
+     * @param array{basePath: string, extensionName: string} $expected
+     */
+    #[DataProvider('extPathProvider')]
+    public function testResolveExtensionContextParsesExtPath(string $input, array $expected): void
+    {
+        $command = $this->makeCommand();
+
+        $method = new \ReflectionMethod($command, 'resolveExtensionContext');
+        $actual = $method->invoke($command, $input);
+
+        self::assertSame($expected, $actual);
+    }
+
     // -------------------------------------------------------------------------
     // getIssueNumbers tests
     // -------------------------------------------------------------------------
+
+    /**
+     * @return iterable<string, array{0: string, 1: string, 2: list<string>}>
+     */
+    public static function issueNumbersProvider(): iterable
+    {
+        yield 'single issue (ignore)' => ['--ignore', '12345', ['12345']];
+        yield 'multiple issues (ignore)' => ['--ignore', '12345,67890', ['12345', '67890']];
+        yield 'empty string returns empty array' => ['--ignore', '', []];
+        yield 'single issue (issue)' => ['--issue', '99999', ['99999']];
+    }
 
     /**
      * @param list<string> $expected
@@ -186,15 +197,43 @@ final class ScanCommandTest extends TestCase
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @return iterable<string, array{0: string, 1: string, 2: list<string>}>
-     */
-    public static function issueNumbersProvider(): iterable
+    // -------------------------------------------------------------------------
+    // --exclude option tests
+    // -------------------------------------------------------------------------
+
+    public function testExcludeOptionAcceptsSingleStringValue(): void
     {
-        yield 'single issue (ignore)' => ['--ignore', '12345', ['12345']];
-        yield 'multiple issues (ignore)' => ['--ignore', '12345,67890', ['12345', '67890']];
-        yield 'empty string returns empty array' => ['--ignore', '', []];
-        yield 'single issue (issue)' => ['--issue', '99999', ['99999']];
+        $tester = $this->buildCommandTester();
+        $exitCode = $tester->execute(
+            [
+                'path' => sys_get_temp_dir(),
+                '--exclude' => 'var/cache',
+            ],
+            [
+                'capture_stderr_separately' => true,
+            ],
+        );
+
+        // No error; the empty fake scanner result means success (0 matches).
+        self::assertSame(0, $exitCode);
+        self::assertSame('', $tester->getErrorOutput());
+    }
+
+    public function testExcludeOptionAcceptsMultipleValues(): void
+    {
+        $tester = $this->buildCommandTester();
+        $exitCode = $tester->execute(
+            [
+                'path' => sys_get_temp_dir(),
+                '--exclude' => ['var/cache', 'vendor', 'node_modules'],
+            ],
+            [
+                'capture_stderr_separately' => true,
+            ],
+        );
+
+        self::assertSame(0, $exitCode);
+        self::assertSame('', $tester->getErrorOutput());
     }
 
     // -------------------------------------------------------------------------

@@ -42,9 +42,12 @@ class ScannerService
         $this->scanner = ScannerFactory::create()->createFor();
     }
 
-    public function scan(string $path): DirectoryResult
+    /**
+     * @param string[] $excludeDirs
+     */
+    public function scan(string $path, array $excludeDirs): DirectoryResult
     {
-        return $this->scanner->scanPath($path, $this->collection);
+        return $this->scanner->scanPath($path, $this->collection, $excludeDirs);
     }
 
     /**

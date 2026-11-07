@@ -40,6 +40,7 @@ final class ScanCommand extends Command
     private const string OPT_TEMPLATE_PATH = 'templatePath';
     private const string OPT_IGNORE = 'ignore';
     private const string OPT_ISSUE = 'issue';
+    private const string OPT_EXCLUDE = 'exclude';
 
     // Default option values
     private const string DEFAULT_TARGET = '14';
@@ -71,6 +72,7 @@ final class ScanCommand extends Command
                 new InputOption(self::OPT_TEMPLATE_PATH, null, InputOption::VALUE_OPTIONAL, 'Path to template folder'),
                 new InputOption(self::OPT_IGNORE, null, InputOption::VALUE_OPTIONAL, 'Issue number(s) to ignore (comma-separated)'),
                 new InputOption(self::OPT_ISSUE, null, InputOption::VALUE_OPTIONAL, 'Issue number(s) to show (comma-separated)'),
+                new InputOption(self::OPT_EXCLUDE, 'e', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Paths to be excluded'),
             ])
             ->setHelp(
                 <<<EOT
@@ -102,6 +104,9 @@ Scan a folder and only show changes for issue #80929:
 
 Scan a folder and do NOT show changes for issue #80929 and #84289:
 <info>php typo3scan.phar scan --ignore 80929,84289 ~/tmp/source</info>
+
+Scan a folder and exclude some directories:
+<info>php typo3scan.phar scan --exclude var/excluded1 --exclude var/excluded2 ~/tmp/source</info>
 EOT
             );
     }
@@ -131,7 +136,13 @@ EOT
 
         ['basePath' => $basePath, 'extensionName' => $extensionName] = $this->resolveExtensionContext($path);
 
-        $directoryResult = $this->scan($path, $version);
+        $exclude = $input->getOption('exclude') ?: [];
+        if (!is_array($exclude)) {
+            $exclude = [$exclude];
+        }
+        $exclude = array_values(array_filter($exclude, is_string(...)));
+
+        $directoryResult = $this->scan($path, $version, $exclude);
         $directoryResult = $this->applyFilters($directoryResult, $input);
 
         $total = $directoryResult->countAll();
@@ -264,10 +275,11 @@ EOT
 
     /**
      * Run the scanner for the given path and version.
+     * @param string[] $excludeDirs
      */
-    private function scan(string $path, string $version): DirectoryResult
+    private function scan(string $path, string $version, array $excludeDirs): DirectoryResult
     {
-        return $this->scannerServiceFactory->create($version)->scan($path);
+        return $this->scannerServiceFactory->create($version)->scan($path, $excludeDirs);
     }
 
     /**
