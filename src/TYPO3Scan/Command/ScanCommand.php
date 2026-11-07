@@ -1,71 +1,80 @@
 <?php
 
-/**
- * Copyright (c) 2018 Michiel Roos
+declare(strict_types=1);
+
+/*
+ * This file is part of the TYPO3 scanner.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * (c) Simon Schaufelberger
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
  */
 
-namespace M12R\TYPO3Scan\Command;
+namespace SimonSchaufi\TYPO3Scan\Command;
 
-use M12R\TYPO3Scan\Service\ScannerService;
+use SimonSchaufi\Scanner\Domain\Model\DirectoryResult;
+use SimonSchaufi\TYPO3Scan\ResultFilter\DirectoryResultFilter;
+use SimonSchaufi\TYPO3Scan\Service\ScannerServiceFactory;
+use SimonSchaufi\TYPO3Scan\Service\TemplatePathResolver;
+use SimonSchaufi\TYPO3Scan\Statistics\ScanStatistics;
+use SimonSchaufi\TYPO3Scan\Twig\Environment;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
-use M12R\Scanner\Domain\Model\DirectoryMatches;
-use M12R\Scanner\Domain\Model\FileMatches;
-use M12R\Scanner\Domain\Model\TheMatch;
-use M12R\Scanner\Matcher\AbstractCoreMatcher;
+use Twig\Loader\FilesystemLoader;
 
-/**
- * Class ScanCommand
- * @package M12R\TYPO3Scan\Command
- */
-class ScanCommand extends Command
+final class ScanCommand extends Command
 {
-    /**
-     * Configure
-     */
-    protected function configure()
+    // Option / argument names
+    private const string ARG_PATH = 'path';
+    private const string OPT_TARGET = 'target';
+    private const string OPT_ONLY = 'only';
+    private const string OPT_INDICATORS = 'indicators';
+    private const string OPT_FORMAT = 'format';
+    private const string OPT_REPORT_FILE = 'reportFile';
+    private const string OPT_TEMPLATE_PATH = 'templatePath';
+    private const string OPT_IGNORE = 'ignore';
+    private const string OPT_ISSUE = 'issue';
+
+    // Default option values
+    private const string DEFAULT_TARGET = '14';
+    private const string DEFAULT_ONLY = 'breaking,deprecation,important,feature';
+    private const string DEFAULT_INDICATORS = 'strong,weak';
+
+    public function __construct(
+        private readonly DirectoryResultFilter $directoryResultFilter,
+        private readonly ScanStatistics $scanStatistics,
+        private readonly Filesystem $filesystem,
+        private readonly ScannerServiceFactory $scannerServiceFactory,
+        private readonly TemplatePathResolver $templatePathResolver,
+    ) {
+        parent::__construct();
+    }
+
+    protected function configure(): void
     {
         $this
             ->setName('scan')
             ->setDescription('Scan a path for deprecated code')
             ->setDefinition([
-                new InputArgument('path', InputArgument::REQUIRED, 'Path to scan'),
-                new InputOption('target', 't', InputOption::VALUE_OPTIONAL, 'TYPO3 version to target', '14'),
-                new InputOption('only', 'o', InputOption::VALUE_OPTIONAL, 'Only report: [breaking, deprecation, important, feature] changes', 'breaking,deprecation,important,feature'),
-                new InputOption('indicators', 'i', InputOption::VALUE_OPTIONAL, 'Only report: [strong, weak] matches', 'strong,weak'),
-                new InputOption('format', 'f', InputOption::VALUE_OPTIONAL, 'Output format', 'plain'),
-                new InputOption('reportFile', 'r', InputOption::VALUE_OPTIONAL, 'Report file', null),
-                new InputOption('templatePath', null, InputOption::VALUE_OPTIONAL, 'Path to template folder'),
-                new InputOption('ignore', null, InputOption::VALUE_OPTIONAL, 'Issue number(s) to ignore (comma-separated)'),
-                new InputOption('issue', null, InputOption::VALUE_OPTIONAL, 'Issue number(s) to show (comma-separated)'),
+                new InputArgument(self::ARG_PATH, InputArgument::REQUIRED, 'Path to scan'),
+                new InputOption(self::OPT_TARGET, 't', InputOption::VALUE_OPTIONAL, 'TYPO3 version to target', self::DEFAULT_TARGET),
+                new InputOption(self::OPT_ONLY, 'o', InputOption::VALUE_OPTIONAL, 'Only report: [breaking, deprecation, important, feature] changes', self::DEFAULT_ONLY),
+                new InputOption(self::OPT_INDICATORS, 'i', InputOption::VALUE_OPTIONAL, 'Only report: [strong, weak] matches', self::DEFAULT_INDICATORS),
+                new InputOption(self::OPT_FORMAT, 'f', InputOption::VALUE_OPTIONAL, 'Output format [' . implode(', ', Format::values()) . ']', Format::Plain->value),
+                new InputOption(self::OPT_REPORT_FILE, 'r', InputOption::VALUE_OPTIONAL, 'Report file', null),
+                new InputOption(self::OPT_TEMPLATE_PATH, null, InputOption::VALUE_OPTIONAL, 'Path to template folder'),
+                new InputOption(self::OPT_IGNORE, null, InputOption::VALUE_OPTIONAL, 'Issue number(s) to ignore (comma-separated)'),
+                new InputOption(self::OPT_ISSUE, null, InputOption::VALUE_OPTIONAL, 'Issue number(s) to show (comma-separated)'),
             ])
-            ->setHelp(<<<EOT
-The <info>scan</info> command scans a path for deprecated code</info>.
+            ->setHelp(
+                <<<EOT
+The <info>scan</info> command scans a path for deprecated code.
 
 Scan a folder:
 <info>php typo3scan.phar scan ~/tmp/source</info>
@@ -97,544 +106,265 @@ EOT
             );
     }
 
-    /**
-     * Execute
-     *
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
-     * @return int
-     * @throws \Twig_Error_Loader
-     * @throws \Twig_Error_Runtime
-     * @throws \Twig_Error_Syntax
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $stdErr = $output;
-        if ($output instanceof ConsoleOutputInterface) {
-            $stdErr = $output->getErrorOutput();
-        }
+        $stdErr = $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output;
 
         $startTime = microtime(true);
-        $format = $input->getOption('format') ?: 'plain';
-        $path = realpath($input->getArgument('path'));
-        if (!is_dir($path)) {
-            $stdErr->writeln(sprintf('Path does not exist: "%s"', $input->getArgument('path')));
+
+        $path = $this->resolvePath($input, $stdErr);
+        if ($path === null) {
             return Command::FAILURE;
         }
 
-        // Get target version
-        $version = $input->getOption('target');
+        $version = $this->getStringOption($input, self::OPT_TARGET, self::DEFAULT_TARGET);
 
-        // Get template paths
-        if ($input->getOption('templatePath') && is_dir(realpath($input->getOption('templatePath')))) {
-            $templatePaths[] = realpath($input->getOption('templatePath'));
-        }
-        $templatePaths[] = __DIR__ . '/../../Resources/Private/Templates';
-
-        $basePath = $path;
-        $extension = '';
-
-        if ($this->pathContainsExt($path)) {
-            $extension = $this->getExtKeyFromPath($path);
-            $basePath = $this->getExtPath($path) . DIRECTORY_SEPARATOR . $extension . DIRECTORY_SEPARATOR;
+        $templatePaths = $this->resolveTemplatePaths($input, $stdErr);
+        if ($templatePaths === null) {
+            return Command::FAILURE;
         }
 
-        $scanner = new ScannerService($version);
-        $directoryMatches = $scanner->scan($path);
+        $format = $this->resolveFormat($input, $stdErr);
+        if (!$format instanceof Format) {
+            return Command::FAILURE;
+        }
 
-        $directoryMatches = $this->filterByType($directoryMatches, $input);
-        $directoryMatches = $this->filterByIndicators($directoryMatches, $input);
-        $directoryMatches = $this->filterByIssuenumbers($directoryMatches, $input);
+        ['basePath' => $basePath, 'extensionName' => $extensionName] = $this->resolveExtensionContext($path);
 
-        $total = $directoryMatches->countAll();
+        $directoryResult = $this->scan($path, $version);
+        $directoryResult = $this->applyFilters($directoryResult, $input);
 
+        $total = $directoryResult->countAll();
         $executionTime = microtime(true) - $startTime;
 
-        $percentagesByType = $this->getPercentagesByType($this->getCountsByType($directoryMatches), $total);
+        $context = $this->buildContext($directoryResult, $path, $extensionName, $basePath, $version, $total, $executionTime);
 
-        $loader = new \Twig\Loader\FilesystemLoader($templatePaths);
-        $twig = new \Twig\Environment($loader);
-        $twig->addFilter($this->getChangeTitle());
-        $twig->addFilter($this->getEscapeDollarFilter());
-        $twig->addFilter($this->getLineFromFileFilter());
-        $twig->addFilter($this->getLinesFromFileFilter());
-        $twig->addFilter($this->getFilenameFilter());
-        $twig->addFilter($this->getOnlineDocumentFilter());
+        $twig = new Environment(new FilesystemLoader($templatePaths));
+        $twig->addCustomFilters();
+        $rendered = $twig->load($format->templateName())->render($context);
 
-        $context = [
-            'title' => $extension ?: $path,
+        $exitCode = $this->writeOutput($rendered, $input, $stdErr, $output);
+        if ($exitCode !== Command::SUCCESS) {
+            return $exitCode;
+        }
+
+        return $total > 0 ? Command::FAILURE : Command::SUCCESS;
+    }
+
+    /**
+     * Validate and resolve the scan path argument.
+     * Returns the real absolute path, or null on failure (error already written to $stdErr).
+     */
+    private function resolvePath(InputInterface $input, OutputInterface $stdErr): ?string
+    {
+        $requestedPath = $input->getArgument(self::ARG_PATH);
+        if (!is_string($requestedPath)) {
+            $stdErr->writeln('No path given.');
+            return null;
+        }
+
+        $path = realpath($requestedPath);
+        if ($path === false || !is_dir($path)) {
+            $stdErr->writeln(sprintf('Path does not exist: "%s"', $requestedPath));
+            return null;
+        }
+
+        return $path;
+    }
+
+    /**
+     * Build the ordered list of Twig template directories.
+     * Returns the list, or null on failure (error already written to $stdErr).
+     *
+     * @return list<string>|null
+     */
+    private function resolveTemplatePaths(InputInterface $input, OutputInterface $stdErr): ?array
+    {
+        $templatePath = $this->getStringOption($input, self::OPT_TEMPLATE_PATH);
+
+        $templatePaths = $this->templatePathResolver->resolve($templatePath);
+        if ($templatePaths === null) {
+            $stdErr->writeln(sprintf('Template path does not exist: "%s"', $templatePath));
+        }
+
+        return $templatePaths;
+    }
+
+    /**
+     * Parse and validate the --format option.
+     * Returns the Format enum case, or null on failure (error already written to $stdErr).
+     */
+    private function resolveFormat(InputInterface $input, OutputInterface $stdErr): ?Format
+    {
+        $value = $this->getStringOption($input, self::OPT_FORMAT, Format::Plain->value);
+        $format = Format::tryFrom($value);
+
+        if ($format === null) {
+            $stdErr->writeln(sprintf(
+                'Invalid format "%s". Allowed values: %s',
+                $value,
+                implode(', ', Format::values())
+            ));
+            return null;
+        }
+
+        return $format;
+    }
+
+    /**
+     * Derive the base path and (optionally) extension name from the scan path.
+     *
+     * @return array{basePath: string, extensionName: string}
+     */
+    private function resolveExtensionContext(string $path): array
+    {
+        ['extPath' => $extPath, 'extensionName' => $extensionName] = $this->resolveExtFromPath($path);
+
+        if ($extensionName === '') {
+            return [
+                'basePath' => rtrim($path, '/') . '/',
+                'extensionName' => '',
+            ];
+        }
+
+        return [
+            'basePath' => $extPath . DIRECTORY_SEPARATOR . $extensionName . DIRECTORY_SEPARATOR,
+            'extensionName' => $extensionName,
+        ];
+    }
+
+    /**
+     * Walk the path upward to find the /ext/ directory and extract the extension key.
+     *
+     * Returns the path to the ext/ directory and the extension name (the directory
+     * immediately below ext/). Both are empty strings when no /ext/ segment is found.
+     *
+     * @return array{extPath: string, extensionName: string}
+     */
+    private function resolveExtFromPath(string $path): array
+    {
+        $extensionName = '';
+        while (($dir = basename($path)) !== '') {
+            if ($dir === 'ext') {
+                return [
+                    'extPath' => $path,
+                    'extensionName' => $extensionName,
+                ];
+            }
+
+            $extensionName = $dir;
+            $path = dirname($path);
+        }
+
+        return [
+            'extPath' => $path,
+            'extensionName' => '',
+        ];
+    }
+
+    /**
+     * Run the scanner for the given path and version.
+     */
+    private function scan(string $path, string $version): DirectoryResult
+    {
+        return $this->scannerServiceFactory->create($version)->scan($path);
+    }
+
+    /**
+     * Apply all three result filters driven by the console input.
+     */
+    private function applyFilters(DirectoryResult $directoryResult, InputInterface $input): DirectoryResult
+    {
+        $directoryResult = $this->directoryResultFilter->filterByType(
+            $directoryResult,
+            $this->getStringOption($input, self::OPT_ONLY)
+        );
+        $directoryResult = $this->directoryResultFilter->filterByIndicators(
+            $directoryResult,
+            $this->getStringOption($input, self::OPT_INDICATORS)
+        );
+
+        return $this->directoryResultFilter->filterByIssueNumbers(
+            $directoryResult,
+            $this->getIssueNumbers($input, self::OPT_IGNORE),
+            $this->getIssueNumbers($input, self::OPT_ISSUE)
+        );
+    }
+
+    /**
+     * Assemble the Twig template context.
+     *
+     * @return array<string, mixed>
+     */
+    private function buildContext(
+        DirectoryResult $directoryResult,
+        string $path,
+        string $extensionName,
+        string $basePath,
+        string $version,
+        int $total,
+        float $executionTime,
+    ): array {
+        $counts = $this->scanStatistics->getCountsByType($directoryResult);
+
+        return [
+            'title' => $extensionName ?: $path,
             'targetVersion' => $version,
             'total' => $total,
             'basePath' => $basePath,
-            'statistics' => $percentagesByType,
-            'directoryMatches' => $directoryMatches,
-            'executionTime' => $executionTime
+            'statistics' => $this->scanStatistics->getSummary($directoryResult),
+            'percentagesByType' => $this->scanStatistics->getPercentagesByType($counts, $total),
+            'directoryResult' => $directoryResult,
+            'executionTime' => $executionTime,
         ];
+    }
 
-        $template = $twig->load(ucfirst($format) . '.twig');
-
-        // Optionally output to report file instead of stdout
-        if ($input->getOption('reportFile')) {
-            $pathInfo = pathinfo($input->getOption('reportFile'));
-
-            if (!is_dir($pathInfo['dirname'])) {
-                $stdErr->writeln(sprintf('Reportfile path does not exist: "%s"', $pathInfo['dirname']));
-                exit;
-            }
-            $reportFile = $pathInfo['dirname'] . DIRECTORY_SEPARATOR . $pathInfo['basename'];
-            $filesystem = new Filesystem();
-            try {
-                $filesystem->touch($reportFile);
-            } catch (IOExceptionInterface $exception) {
-                echo 'An error occurred while creating your report at ' . $exception->getPath();
-            }
-            $filesystem->dumpFile($reportFile, $template->render($context));
-        } else {
-            $output->write($template->render($context));
+    /**
+     * Write $rendered to a report file or to stdout.
+     * Returns Command::SUCCESS / Command::FAILURE.
+     */
+    private function writeOutput(
+        string $rendered,
+        InputInterface $input,
+        OutputInterface $stdErr,
+        OutputInterface $output,
+    ): int {
+        $reportFileOption = $this->getStringOption($input, self::OPT_REPORT_FILE);
+        if ($reportFileOption === '') {
+            $output->write($rendered);
+            return Command::SUCCESS;
         }
 
-        if ($total > 0) {
+        $reportFileDir = dirname($reportFileOption);
+        if (!is_dir($reportFileDir)) {
+            $stdErr->writeln(sprintf('Reportfile path does not exist: "%s"', $reportFileDir));
             return Command::FAILURE;
         }
+
+        $this->filesystem->dumpFile($reportFileOption, $rendered);
 
         return Command::SUCCESS;
     }
 
     /**
-     * Filter out only the types of changes the user wants in the report
+     * Read a console option as string.
      *
-     * @param DirectoryMatches $directoryMatches
-     * @param InputInterface $input
-     * @return DirectoryMatches
+     * Falls back to $default if the option was passed without a value or is absent.
      */
-    protected function filterByType(DirectoryMatches $directoryMatches, InputInterface $input): DirectoryMatches
+    private function getStringOption(InputInterface $input, string $name, string $default = ''): string
     {
-        $only = explode(',', $input->getOption('only'));
-        $only = array_map('strtoupper', $only);
+        $value = $input->getOption($name);
 
-        $path = $directoryMatches->getPath();
-
-        $filteredDirectoryMatches = new DirectoryMatches($path);
-
-        /** @var FileMatches $fileMatches */
-        foreach ($directoryMatches as $fileMatches) {
-            $filteredFileMatches = new FileMatches($fileMatches->getPath());
-            /** @var TheMatch $fileMatch */
-            foreach ($fileMatches as $fileMatch) {
-                if (in_array($fileMatch->getType(), $only, true)) {
-                    $filteredFileMatches->append($fileMatch);
-                }
-            }
-            if (count($filteredFileMatches)) {
-                $filteredDirectoryMatches->append($filteredFileMatches);
-            }
-        }
-
-        return $filteredDirectoryMatches;
+        return is_string($value) ? $value : $default;
     }
 
     /**
-     * Filter the types of changes by indicators (confidence)
+     * Read a console option as a comma-separated list of issue numbers.
      *
-     * @param DirectoryMatches $directoryMatches
-     * @param InputInterface $input
-     * @return DirectoryMatches
+     * @return list<string>
      */
-    protected function filterByIndicators(DirectoryMatches $directoryMatches, InputInterface $input): DirectoryMatches
+    private function getIssueNumbers(InputInterface $input, string $name): array
     {
-        $indicators = explode(',', $input->getOption('indicators'));
-        $indicators = array_map('strtoupper', $indicators);
-
-        $path = $directoryMatches->getPath();
-
-        $filteredDirectoryMatches = new DirectoryMatches($path);
-
-        /** @var FileMatches $fileMatches */
-        foreach ($directoryMatches as $fileMatches) {
-            $filteredFileMatches = new FileMatches($fileMatches->getPath());
-            /** @var TheMatch $fileMatch */
-            foreach ($fileMatches as $fileMatch) {
-                if (in_array(strtoupper($fileMatch->getIndicator()), $indicators, true)) {
-                    $filteredFileMatches->append($fileMatch);
-                }
-            }
-            if (count($filteredFileMatches)) {
-                $filteredDirectoryMatches->append($filteredFileMatches);
-            }
-        }
-
-        return $filteredDirectoryMatches;
-    }
-
-
-    /**
-     * Filter out unwanted issue numbers
-     *
-     * @param DirectoryMatches $directoryMatches
-     * @param InputInterface $input
-     * @return DirectoryMatches
-     */
-    protected function filterByIssuenumbers(DirectoryMatches $directoryMatches, InputInterface $input): DirectoryMatches
-    {
-        $ignoreIssues = array_filter(explode(',', $input->getOption('ignore', '')));
-        $showIssues = array_filter(explode(',', $input->getOption('issue', '')));
-        if (!count($ignoreIssues) && !count($showIssues)) {
-            return $directoryMatches;
-        }
-        $defaultSkip = count($showIssues) > 0;
-
-        $path = $directoryMatches->getPath();
-
-        $filteredDirectoryMatches = new DirectoryMatches($path);
-
-        /** @var FileMatches $fileMatches */
-        foreach ($directoryMatches as $fileMatches) {
-            $filteredFileMatches = new FileMatches($fileMatches->getPath());
-            /** @var TheMatch $fileMatch */
-            foreach ($fileMatches as $fileMatch) {
-                $issueNumbers = [];
-                $skip = $defaultSkip;
-                foreach ($fileMatch->getRestFiles() as $restFile) {
-                    if (preg_match('#^/[a-zA-Z]+-([0-9]+)-#', $restFile, $matches)) {
-                        $issueNumber = $matches[1];
-                        if (count($ignoreIssues) && in_array($issueNumber, $ignoreIssues)) {
-                            $skip = true;
-                        }
-                        if (count($showIssues) && in_array($issueNumber, $showIssues)) {
-                            $skip = false;
-                        }
-                    }
-                }
-                if (!$skip) {
-                    $filteredFileMatches->append($fileMatch);
-                }
-            }
-            if (count($filteredFileMatches)) {
-                $filteredDirectoryMatches->append($filteredFileMatches);
-            }
-        }
-
-        return $filteredDirectoryMatches;
-    }
-
-    /**
-     * TWIG filter to get line from file
-     *
-     * @return \Twig\TwigFilter
-     */
-    protected function getLineFromFileFilter(): \Twig\TwigFilter
-    {
-        return new \Twig\TwigFilter('getLineFromFile', function ($fileName, $lineNumber) {
-            return $this->getLineFromFile($fileName, $lineNumber);
-        });
-    }
-
-    /**
-     * TWIG filter to get lines from file
-     *
-     * @return \Twig\TwigFilter
-     */
-    protected function getLinesFromFileFilter(): \Twig\TwigFilter
-    {
-        return new \Twig\TwigFilter('getLinesFromFile', function ($fileName, $lineNumber, $before = 2, $after = 2) {
-            return $this->getLinesFromFile($fileName, $lineNumber, $before, $after);
-        });
-    }
-
-    /**
-     * TWIG filter for getting the name of a file without the extension
-     *
-     * @return \Twig\TwigFilter
-     */
-    protected function getFilenameFilter(): \Twig\TwigFilter
-    {
-        return new \Twig\TwigFilter('getFilename', function ($path) {
-            return pathinfo($path, PATHINFO_FILENAME);
-        });
-    }
-
-    /**
-     * TWIG filter for escaping the dollar character
-     */
-    protected function getEscapeDollarFilter(): \Twig\TwigFilter
-    {
-        return new \Twig\TwigFilter('escapeDollar', function ($string) {
-            return str_replace('$', '\$', $string);
-        });
-    }
-
-    /**
-     * TWIG filter to get link to online documentation
-     */
-    protected function getOnlineDocumentFilter(): \Twig\TwigFilter
-    {
-        return new \Twig\TwigFilter('getOnlineDocument', function ($path) {
-            return $this->findOnlineDocumentation($path);
-        });
-    }
-
-    /**
-     * TWIG filter to get the title of the change
-     */
-    protected function getChangeTitle(): \Twig\TwigFilter
-    {
-        return new \Twig\TwigFilter('getChangeTitle', function ($path) {
-            $rstPath = $this->findRstFile($path);
-            return $this->extractTitleFromRstFile($rstPath);
-        });
-    }
-
-    /**
-     * Return a specific line from a file
-     *
-     * @param $fileName
-     * @param $lineNumber
-     * @return string
-     */
-    protected function getLineFromFile($fileName, $lineNumber): string
-    {
-        $file = new \SplFileObject($fileName);
-        if (!$file->eof()) {
-            $file->seek($lineNumber - 1);
-            return trim($file->current());
-        }
-        return '';
-    }
-
-    /**
-     * Return several specific lines from a file
-     *
-     * @param $fileName
-     * @param $lineNumber
-     * @param int $before
-     * @param int $after
-     * @return string
-     */
-    protected function getLinesFromFile($fileName, $lineNumber, $before = 2, $after = 2): string
-    {
-        $before = abs($before);
-        $after = abs($after);
-        $file = new \SplFileObject($fileName);
-        $lines = [];
-
-        $start = $lineNumber - 1 - $before;
-        $start = ($start < 0) ? 0 : $start;
-        $end = $start + $before + $after + 1;
-
-        for ($position = $start; $position < $end; $position++) {
-            if (!$file->eof()) {
-                $file->seek($position);
-                $lines[] = trim($file->current());
-            }
-        }
-
-        return implode(PHP_EOL, $lines);
-    }
-
-    /**
-     * Check if the given path contains /ext/
-     *
-     * @param $path
-     * @return bool
-     */
-    protected function pathContainsExt($path): bool
-    {
-        while ($dir = basename($path)) {
-            if ($dir === 'ext') {
-                return true;
-            }
-            $newPath = \dirname($path);
-            if ($newPath === $path) {
-                break;
-            }
-            $path = $newPath;
-        }
-        return false;
-    }
-
-    /**
-     * Return the base path with /ext/ on the end
-     *
-     * @param $path
-     * @return string
-     */
-    protected function getExtPath($path): string
-    {
-        while ($dir = basename($path)) {
-            if ($dir === 'ext') {
-                return $path;
-            }
-            $path = \dirname($path);
-        }
-        return $path;
-    }
-
-    /**
-     * Return the extension key from the path
-     *
-     * @param $path
-     * @return string
-     */
-    protected function getExtKeyFromPath($path): string
-    {
-        $extensionName = '';
-        while ($dir = basename($path)) {
-            if ($dir === 'ext') {
-                return $extensionName;
-            }
-            $extensionName = $dir;
-            $path = \dirname($path);
-        }
-        return $extensionName;
-    }
-
-    /**
-     * Count the number of total weak, strong, deprecation, breaking etc.
-     *
-     * @param $directoryMatches
-     * @return array
-     */
-    protected function getCountsByType($directoryMatches): array
-    {
-        $countsByType = [
-            'strong' => 0,
-            'weak' => 0
-        ];
-        foreach ($directoryMatches as $fileMatches) {
-            /** @var TheMatch $fileMatch */
-            foreach ($fileMatches as $fileMatch) {
-                if (!array_key_exists($fileMatch->getIndicator(), $countsByType)) {
-                    $countsByType[$fileMatch->getIndicator()] = 0;
-                }
-                $countsByType[$fileMatch->getIndicator()]++;
-                if (!array_key_exists($fileMatch->getType(), $countsByType)) {
-                    $countsByType[$fileMatch->getType()] = 0;
-                }
-                $countsByType[$fileMatch->getType()]++;
-            }
-        }
-        return $countsByType;
-    }
-
-    /**
-     * Get the percentages by type of total
-     * @param array $counts
-     * @param int $total
-     * @return array
-     */
-    protected function getPercentagesByType($counts, $total): array
-    {
-        $result = [];
-        foreach ($counts as $type => $count) {
-            if ($total <= 0) {
-                $result[$type] = 0;
-            } else {
-                $result[$type] = number_format(100 * $count / $total, 1) . '% (' . $count . ')';
-            }
-        }
-        return $result;
-    }
-
-    /**
-     * Find the real path to the rst file
-     * The Matchers sometimes include the version number of the TYPO3 version,
-     * other times they don't. So we can't rely on the rst file path given in
-     * the matcher.
-     *
-     * Instead we take the last part (basename) of the rst file and then look up
-     * the file in the Changelog dir.
-     *
-     * @param $path
-     * @return string
-     */
-    protected function findRstFile($path): string
-    {
-        static $restFiles = [];
-        if (empty($restFiles)) {
-            $restFinder = new Finder();
-            $restFilesList = $restFinder->files()->in(__DIR__ . '/../../Resources/Private/Changelog')->name('*.rst');
-            /** @var \SplFileInfo $restFile */
-            foreach ($restFilesList as $restFile) {
-                $restFiles[basename($restFile->getPathname())] = $restFile->getPathname();
-            }
-            // Special case for the ClassNamePatternMatcher Rules from v7
-            $restFiles['Deprecation-legacy-files.md'] = 'Deprecation-legacy-files.md';
-            $restFiles['Deprecation-non-namespaced.md'] = 'Deprecation-non-namespaced.md';
-        }
-        return $restFiles[basename($path)];
-    }
-
-    /**
-     * Extract the title from the rst file
-     *
-     * @param string $path
-     * @return string
-     */
-    protected function extractTitleFromRstFile($path): string
-    {
-        static $restFileTitles = [
-            // Special case for the ClassNamePatternMatcher Rules from v7
-            3899088142 => 'Renamed TYPO3 core libraries', // key: crc32('Deprecation-legacy-files.md')
-            3619663099 => 'Use of non-namespaced classes' // key: crc32('Deprecation-non-namespaced.md')
-        ];
-        $cacheKey = crc32($path);
-        if (array_key_exists($cacheKey, $restFileTitles)) {
-            return $restFileTitles[$cacheKey];
-        }
-        $result = '';
-        $thisShouldBeTheHeader = false;
-        $fileHandle = fopen($path, 'r');
-
-        while (($line = fgets($fileHandle)) !== false) {
-            if ($thisShouldBeTheHeader) {
-                $result = trim($line);
-                break;
-            }
-            if (strpos($line, '============') === 0) {
-                $thisShouldBeTheHeader = true;
-            }
-        }
-        $restFileTitles[$cacheKey] = $result;
-        return $result;
-    }
-
-    /**
-     * Find the real path to the online documentation
-     * The Matchers sometimes include the version number of the TYPO3 version,
-     * other times they don't. So we can't rely on the rst file path given in
-     * the matcher.
-     *
-     * Instead we take the last part (basename) of the rst file and then look up
-     * the file in the Changelog dir.
-     *
-     * @param $path
-     * @return string
-     */
-    protected function findOnlineDocumentation($path): string
-    {
-        static $onlineDocumentationLinks = [
-            // Special case for the ClassNamePatternMatcher Rules from v7
-            1299497039 => 'https://gist.github.com/Tuurlijk/f857bf41e559ce3908290fb96d98b5e4', // key: crc32('/Deprecation-legacy-files.md')
-            2959317077 => 'https://gist.github.com/Tuurlijk/79aba880880e6340ffd2720ff1c5b623' // key: crc32('/Deprecation-non-namespaced.md')
-        ];
-        $cacheKey = crc32($path);
-        if (array_key_exists($cacheKey, $onlineDocumentationLinks)) {
-            return $onlineDocumentationLinks[$cacheKey];
-        }
-        $onlineDocument = '';
-        $base = 'https://docs.typo3.org/c/typo3/cms-core/main/en-us/';
-        $links = file(__DIR__ . '/../../Resources/Private/links.txt');
-        $filename = basename($path);
-        foreach ($links as $link) {
-            $link = rtrim($link);
-            if (substr($link, -\strlen($filename)) === $filename) {
-                $onlineDocument = $base . $link;
-                $onlineDocument = str_replace('.rst', '.html', $onlineDocument);
-                break;
-            }
-        }
-        $onlineDocumentationLinks[$cacheKey] = $onlineDocument;
-        return $onlineDocument;
+        return array_values(array_filter(explode(',', $this->getStringOption($input, $name))));
     }
 }

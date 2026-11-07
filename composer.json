@@ -1,59 +1,101 @@
 {
-  "name": "m12r/typo3scan",
-  "description": "TYPO3 scanner",
-  "type": "project",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Michiel Roos",
-      "email": "michiel@michielroos.com"
-    }
-  ],
-  "require": {
-    "php": "^8.3",
-    "m12r/typo3-cms-scanner": "dev-main",
-    "symfony/process": "^7.4",
-    "symfony/finder": "^7.4",
-    "symfony/yaml": "^7.4",
-    "twig/twig": "^v3.23",
-    "symfony/console": "^7.4",
-    "symfony/debug": "^4.4",
-    "symfony/filesystem": "^7.4",
-    "symfony/string": "^7.4"
-  },
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/mschwemer/scanner"
-    }
-  ],
-  "autoload": {
-    "psr-4": {
-      "M12R\\TYPO3Scan\\": "src/TYPO3Scan"
-    }
-  },
-  "bin": [
-    "bin/typo3scan",
-    "typo3scan.phar"
-  ],
-  "config": {
-    "bin-dir": "bin",
-    "optimize-autoloader": true,
-    "preferred-install": "dist",
-    "allow-plugins": {
-      "bamarni/composer-bin-plugin": true
-    }
-  },
-  "require-dev": {
-    "roave/security-advisories": "dev-master",
-    "bamarni/composer-bin-plugin": "^1.8"
-  },
-  "scripts": {
-    "build": "./bin/box compile && cp typo3scan.phar typo3scan",
-    "prep": "cp typo3scan.phar typo3scan ../typo3scan"
-  },
-  "scripts-descriptions": {
-    "build": "Build the typo3scan phar file",
-    "prep": "Copy the phar files to the binary release repository that you have cloned into ../typo3scan"
-  }
+	"name": "simonschaufi/typo3scan",
+	"description": "TYPO3 scanner as standalone CLI application",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Michiel Roos",
+			"email": "michiel@michielroos.com"
+		},
+		{
+			"name": "Simon Schaufelberger"
+		}
+	],
+	"require": {
+		"php": "^8.3",
+		"simonschaufi/typo3-cms-scanner": "^14.0",
+		"symfony/console": "^7.4",
+		"symfony/filesystem": "^7.4",
+		"symfony/finder": "^7.4",
+		"symfony/process": "^7.4",
+		"symfony/string": "^7.4",
+		"symfony/yaml": "^7.4",
+		"twig/twig": "^3.23"
+	},
+	"require-dev": {
+		"ext-simplexml": "*",
+		"bamarni/composer-bin-plugin": "^1.8",
+		"ergebnis/composer-normalize": "^2.54",
+		"phpstan/phpstan": "^2.3",
+		"phpstan/phpstan-deprecation-rules": "^2.0",
+		"phpstan/phpstan-phpunit": "^2.1",
+		"phpstan/phpstan-strict-rules": "^2.1",
+		"phpstan/phpstan-symfony": "^2.1",
+		"phpunit/phpunit": "^12.5",
+		"rector/rector": "^2.7",
+		"roave/security-advisories": "dev-latest",
+		"symplify/easy-coding-standard": "^13.3"
+	},
+	"repositories": {
+		"local": {
+			"type": "path",
+			"url": "packages/*"
+		}
+	},
+	"autoload": {
+		"psr-4": {
+			"SimonSchaufi\\TYPO3Scan\\": "src/TYPO3Scan/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"SimonSchaufi\\TYPO3Scan\\Tests\\": "tests/"
+		},
+		"exclude-from-classmap": [
+			"tests/Integration/Fixtures"
+		]
+	},
+	"bin": [
+		"bin/typo3scan"
+	],
+	"config": {
+		"allow-plugins": {
+			"bamarni/composer-bin-plugin": true,
+			"ergebnis/composer-normalize": true
+		},
+		"optimize-autoloader": true,
+		"platform": {
+			"php": "8.3.36"
+		},
+		"preferred-install": "dist",
+		"sort-packages": true
+	},
+	"scripts": {
+		"build": "./bin/box compile && cp typo3scan.phar typo3scan",
+		"ci:composer:normalize": "@composer normalize --no-check-lock --dry-run",
+		"ci:composer:psr-verify": "@composer dumpautoload --optimize --strict-psr --no-plugins",
+		"ci:php:ecs": "vendor/bin/ecs check --no-progress-bar",
+		"ci:php:rector": "vendor/bin/rector process --dry-run --no-progress-bar --ansi",
+		"ci:php:stan": "vendor/bin/phpstan analyse --no-progress --no-interaction --memory-limit 4G",
+		"ci:tests:unit": "vendor/bin/phpunit",
+		"fix:composer:normalize": "@composer normalize --no-check-lock",
+		"fix:php:ecs": "vendor/bin/ecs check --fix --no-progress-bar --ansi",
+		"fix:php:rector": "vendor/bin/rector process --no-progress-bar --ansi",
+		"local:unit-tests": "vendor/bin/phpunit --colors --stop-on-failure",
+		"phpstan:baseline": "vendor/bin/phpstan analyse --no-progress --no-interaction --memory-limit 4G --generate-baseline=phpstan-baseline.neon --allow-empty-baseline"
+	},
+	"scripts-descriptions": {
+		"build": "Build the typo3scan phar file",
+		"ci:composer:normalize": "Checks the composer.json.",
+		"ci:composer:psr-verify": "Verifies PSR-4 namespace correctness.",
+		"ci:php:ecs": "Checks the code style with easy coding standard.",
+		"ci:php:rector": "Migrates code with Rector in dry run mode.",
+		"ci:php:stan": "Runs PHPStan to check for static analysis errors.",
+		"ci:tests:unit": "Runs the unit tests.",
+		"fix:composer:normalize": "Normalizes composer.json file content.",
+		"fix:php:ecs": "Fixes the code style with easy coding standard.",
+		"fix:php:rector": "Migrates code with Rector.",
+		"local:unit-tests": "Runs the unit tests.",
+		"phpstan:baseline": "Generates the PHPStan baseline file."
+	}
 }

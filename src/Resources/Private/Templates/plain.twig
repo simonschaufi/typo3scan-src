@@ -1,0 +1,25 @@
+<info>{{ title }}</info>
+
+Found <comment>{{ total }}</comment> matches in <comment>{{ executionTime|number_format(2) }}s</comment> when checking for changes and deprecations in <comment>TYPO3 {{ targetVersion }}</comment>
+
+Effective code lines: {{ directoryResult.effectiveCodeLines }}
+Ignored files: {{ directoryResult.numberOfIgnoredFiles }}
+Ignored lines: {{ directoryResult.ignoredLines }}
+
+{% for key in percentagesByType|keys %}{{ key }}	{% endfor %}
+
+{% for key, percentage in percentagesByType %}{{ percentage }}	{% endfor %}
+
+
+{% for scanResult in directoryResult %}
+<info>{{ scanResult.getFile|replace({ (basePath): ""}) }}</info>
+{% for scanMatch in scanResult.getMatches %}
+{{ scanMatch.getMessage|raw }} <comment>({{ scanMatch.getIndicator.value }})</comment>
+<comment>{{ scanMatch.getLine }}</comment> {{ scanResult.getFile|getLineFromFile(scanMatch.getLine)|raw }}
+{% for restFile in scanMatch.getRestFiles %}
+{{ restFile|getChangeTitle|raw }}
+{{ restFile|getOnlineDocument }}
+{% endfor %}
+
+{% endfor %}
+{% endfor %}

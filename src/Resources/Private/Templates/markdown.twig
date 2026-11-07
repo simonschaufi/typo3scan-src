@@ -1,0 +1,30 @@
+# {{ title }}
+
+Found **{{ total }}** matches in **{{ executionTime|number_format(2) }}s** when
+checking for changes and deprecations in **TYPO3 {{ targetVersion }}**
+
+| Statistics | Result |
+| --- | --- |
+| Effective code lines | {{ directoryResult.effectiveCodeLines }} |
+| Ignored files | {{ directoryResult.numberOfIgnoredFiles }} |
+| Ignored lines | {{ directoryResult.ignoredLines }} |
+
+|{% for key in percentagesByType|keys %} {{ key }} | {% endfor %}
+
+|{% for key in percentagesByType %} --- | {% endfor %}
+
+|{% for key, percentage in percentagesByType %} {{ percentage }} | {% endfor %}
+
+
+{% for scanResult in directoryResult %}
+## {{ scanResult.getFile|replace({ (basePath): ""}) }}
+{% for scanMatch in scanResult.getMatches %}
+### {{ scanMatch.getMessage|raw }} *({{ scanMatch.getIndicator.value }})*
+{{ scanMatch.getLine }} `{{ scanResult.getFile|getLineFromFile(scanMatch.getLine)|raw }}`
+
+{% for restFile in scanMatch.getRestFiles %}
+- [{{ restFile|getChangeTitle|raw }}]({{ restFile|getOnlineDocument }})
+{% endfor %}
+
+{% endfor %}
+{% endfor %}

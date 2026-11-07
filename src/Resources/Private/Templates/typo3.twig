@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="{{ title }}" tests="{{ total }}" errors="{{ total }}" failures="{{ total }}" time="{{ executionTime }}" effectiveCodeLines="{{ directoryResult.effectiveCodeLines }}" numberOfIgnoredFiles="{{ directoryResult.numberOfIgnoredFiles }}" ignoredLines="{{ directoryResult.ignoredLines }}">
+{% for scanResult in directoryResult %}
+<testsuite name="{{ scanResult.getFile|replace({ (basePath): ""}) }}" tests="{{ scanResult.getMatches|length }}" errors="{{ scanResult.getMatches|length }}" failures="{{ scanResult.getMatches|length }}" effectiveCodeLines="{{ scanResult.getEffectiveCodeLines }}" ignoredLines="{{ scanResult.getIgnoredLines }}">
+{% for scanMatch in scanResult.getMatches %}
+    <testcase name="{{ scanMatch.getMessage|escapeDollar }} ({{ scanMatch.getIndicator.value }} / {{ scanMatch.getType }})">
+        <failure>
+{{ scanMatch.getLine }} {{ scanResult.getFile|getLineFromFile(scanMatch.getLine)|raw|escapeDollar }}
+
+{% for restFile in scanMatch.getRestFiles %}
+- {{ restFile|getChangeTitle }}: {{ restFile|getOnlineDocument }}
+{% endfor %}
+        </failure>
+    </testcase>
+{% endfor %}
+</testsuite>
+{% endfor %}
+</testsuites>

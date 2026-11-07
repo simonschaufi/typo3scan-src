@@ -1,0 +1,35 @@
+includes:
+    - %rootDir%/../phpstan-symfony/extension.neon
+    - %rootDir%/../phpstan-symfony/rules.neon
+    - %rootDir%/../phpstan-deprecation-rules/rules.neon
+    - %rootDir%/../phpstan-strict-rules/rules.neon
+    - %rootDir%/../phpstan/conf/bleedingEdge.neon
+
+parameters:
+    paths:
+        - src
+    featureToggles:
+        skipCheckGenericClasses:
+            - Symfony\Component\Form\AbstractType
+            - Symfony\Component\Form\FormInterface
+            - Symfony\Component\Form\FormTypeExtensionInterface
+            - Symfony\Component\Form\FormTypeInterface
+    level: 9
+    excludePaths:
+        - vendor/(?)
+        - rector.php
+    strictRules:
+        allRules: false
+        booleansInConditions: false
+        closureUsesThis: true
+        disallowedLooseComparison: true
+        matchingInheritedMethodNames: true
+        noVariableVariables: false
+        numericOperandsInArithmeticOperators: true
+        overwriteVariablesWithLoop: true
+        requireParentConstructorCall: true
+        switchConditionsMatchingType: true
+        uselessCast: true
+    tmpDir: %rootDir%/../../../var/cache/phpstan
+    treatPhpDocTypesAsCertain: false
+    inferPrivatePropertyTypeFromConstructor: true
