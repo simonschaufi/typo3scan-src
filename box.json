@@ -2,31 +2,41 @@
   "datetime": "release_date",
   "finder": [
     {
-      "notName": "/.*\\.md|.*\\.dist|Makefile/",
+      "name": "*.php",
+      "in": [
+        "src"
+      ]
+    },
+    {
+      "notName": "/.*\\.md|.*\\.dist|Makefile|composer\\.json|composer\\.lock|LICENSE|CHANGELOG|README\\.*|Howto\\.rst/",
       "exclude": [
+        "bin",
         "example",
         "examples",
         "test",
         "test_old",
         "tests",
         "Tests",
-        "Tester",
-        "vendor-bin"
+        "Tester"
       ],
       "in": [
-        "src",
         "vendor"
       ]
     }
   ],
+  "finder-bin": [
+    {
+      "in": [
+        "resources"
+      ]
+    }
+  ],
   "compression": "GZ",
-  "algorithm": "SHA512",
   "compactors": [
     "KevinGH\\Box\\Compactor\\Php",
     "KevinGH\\Box\\Compactor\\Json"
   ],
   "git-commit-short": "package_version",
   "git-version": "package_branch_alias_version",
-  "main": "./bin/typo3scan",
   "output": "typo3scan.phar"
 }

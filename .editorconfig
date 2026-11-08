@@ -24,6 +24,11 @@ indent_style = tab
 [composer.json]
 indent_style = tab
 
+# box JSON-Files
+[box.json]
+indent_style = space
+indent_size = 2
+
 # ReST-Files
 [*.{rst,rst.txt}]
 max_line_length = 80

@@ -71,7 +71,7 @@
 		"sort-packages": true
 	},
 	"scripts": {
-		"build": "./bin/box compile && cp typo3scan.phar typo3scan",
+		"build": "vendor/bin/box compile && cp typo3scan.phar typo3scan",
 		"ci:composer:normalize": "@composer normalize --no-check-lock --dry-run",
 		"ci:composer:psr-verify": "@composer dumpautoload --optimize --strict-psr --no-plugins",
 		"ci:php:ecs": "vendor/bin/ecs check --no-progress-bar",

@@ -105,7 +105,7 @@ vendor/bin/phpstan analyse
 Make sure you have [Box](https://github.com/box-project/box) installed.
 
 ```bash
-composer update
+composer bin box install
 composer build
 ```
 
