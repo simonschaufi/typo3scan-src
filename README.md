@@ -42,7 +42,7 @@ fork of it and then run that library inside the **typo3scan** tool.
 Clone this repository (or your fork of the scanner repository):
 
 ```bash
-git clone https://github.com/simonschaufi/typo3scan-src.git
+git clone https://github.com/simonschaufi/typo3scan.git
 ```
 
 Clone the TYPO3 scanner library repository (or your fork of the scanner repository):
