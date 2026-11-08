@@ -767,4 +767,101 @@ final class ScanCommandIntegrationTest extends TestCase
         self::assertStringNotContainsString('addCssFile', $output);
         self::assertStringNotContainsString('addJavascript', $output);
     }
+
+    // -------------------------------------------------------------------------
+    // --title option: integration tests across all templates
+    // -------------------------------------------------------------------------
+
+    /**
+     * @return iterable<string, array{format: string, expectedSubstrings: list<string>}>
+     */
+    public static function titleOptionFormatProvider(): iterable
+    {
+        yield 'plain template uses configured title' => [
+            'format' => 'plain',
+            'expectedSubstrings' => ['Custom Project Title'],
+        ];
+        yield 'markdown template uses configured title in heading' => [
+            'format' => 'markdown',
+            'expectedSubstrings' => ['# Custom Project Title'],
+        ];
+        yield 'junit template uses configured title in testsuites name' => [
+            'format' => 'junit',
+            'expectedSubstrings' => ['<testsuites name="Custom Project Title"'],
+        ];
+        yield 'typo3 template uses configured title in testsuites name' => [
+            'format' => 'typo3',
+            'expectedSubstrings' => ['<testsuites name="Custom Project Title"'],
+        ];
+        yield 'html template uses configured title in title tag and heading' => [
+            'format' => 'html',
+            'expectedSubstrings' => [
+                '<title>Custom Project Title | TYPO3 scan results</title>',
+                '<h1>TYPO3 scan results for "Custom Project Title"</h1>',
+            ],
+        ];
+    }
+
+    /**
+     * @param list<string> $expectedSubstrings
+     */
+    #[DataProvider('titleOptionFormatProvider')]
+    public function testTitleOptionConfiguresTitleInAllTemplates(string $format, array $expectedSubstrings): void
+    {
+        $this->tester->execute(
+            [
+                'path' => self::FIXTURE_PATH,
+                '--target' => '12',
+                '--format' => $format,
+                '--title' => 'Custom Project Title',
+            ],
+            [
+                'capture_stderr_separately' => true,
+            ],
+        );
+
+        $output = $this->tester->getDisplay();
+        foreach ($expectedSubstrings as $expectedSubstring) {
+            self::assertStringContainsString($expectedSubstring, $output);
+        }
+    }
+
+    public function testDefaultTitleUsedWhenTitleOptionOmitted(): void
+    {
+        $this->tester->execute(
+            [
+                'path' => self::FIXTURE_PATH,
+                '--target' => '12',
+                '--format' => 'markdown',
+            ],
+            [
+                'capture_stderr_separately' => true,
+            ],
+        );
+
+        $output = $this->tester->getDisplay();
+        $realPath = realpath(self::FIXTURE_PATH);
+        self::assertNotFalse($realPath);
+        self::assertStringContainsString('# ' . $realPath, $output);
+    }
+
+    public function testEmptyTitleFallsBackToDefault(): void
+    {
+        $this->tester->execute(
+            [
+                'path' => self::FIXTURE_PATH,
+                '--target' => '12',
+                '--format' => 'markdown',
+                '--title' => '',
+            ],
+            [
+                'capture_stderr_separately' => true,
+            ],
+        );
+
+        $output = $this->tester->getDisplay();
+        $realPath = realpath(self::FIXTURE_PATH);
+        self::assertNotFalse($realPath);
+        self::assertStringContainsString('# ' . $realPath, $output);
+    }
 }

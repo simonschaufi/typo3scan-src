@@ -41,6 +41,7 @@ final class ScanCommand extends Command
     private const string OPT_IGNORE = 'ignore';
     private const string OPT_ISSUE = 'issue';
     private const string OPT_EXCLUDE = 'exclude';
+    private const string OPT_TITLE = 'title';
 
     // Default option values
     private const string DEFAULT_TARGET = '14';
@@ -73,6 +74,7 @@ final class ScanCommand extends Command
                 new InputOption(self::OPT_IGNORE, null, InputOption::VALUE_OPTIONAL, 'Issue number(s) to ignore (comma-separated)'),
                 new InputOption(self::OPT_ISSUE, null, InputOption::VALUE_OPTIONAL, 'Issue number(s) to show (comma-separated)'),
                 new InputOption(self::OPT_EXCLUDE, 'e', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Paths to be excluded'),
+                new InputOption(self::OPT_TITLE, null, InputOption::VALUE_OPTIONAL, 'Custom title shown in all reports'),
             ])
             ->setHelp(
                 <<<EOT
@@ -107,6 +109,9 @@ Scan a folder and do NOT show changes for issue #80929 and #84289:
 
 Scan a folder and exclude some directories:
 <info>php typo3scan.phar scan --exclude var/excluded1 --exclude var/excluded2 ~/tmp/source</info>
+
+Scan a folder with a custom report title:
+<info>php typo3scan.phar scan --title "My Extension" ~/tmp/source</info>
 EOT
             );
     }
@@ -148,7 +153,12 @@ EOT
         $total = $directoryResult->countAll();
         $executionTime = microtime(true) - $startTime;
 
-        $context = $this->buildContext($directoryResult, $path, $extensionName, $basePath, $version, $total, $executionTime);
+        $title = $this->getStringOption($input, self::OPT_TITLE);
+        if ($title === '') {
+            $title = $extensionName ?: $path;
+        }
+
+        $context = $this->buildContext($directoryResult, $title, $basePath, $version, $total, $executionTime);
 
         $twig = new Environment(new FilesystemLoader($templatePaths));
         $twig->addCustomFilters();
@@ -310,8 +320,7 @@ EOT
      */
     private function buildContext(
         DirectoryResult $directoryResult,
-        string $path,
-        string $extensionName,
+        string $title,
         string $basePath,
         string $version,
         int $total,
@@ -320,7 +329,7 @@ EOT
         $counts = $this->scanStatistics->getCountsByType($directoryResult);
 
         return [
-            'title' => $extensionName ?: $path,
+            'title' => $title,
             'targetVersion' => $version,
             'total' => $total,
             'basePath' => $basePath,

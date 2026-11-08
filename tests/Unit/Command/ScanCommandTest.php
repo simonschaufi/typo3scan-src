@@ -237,6 +237,28 @@ final class ScanCommandTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // --title option tests
+    // -------------------------------------------------------------------------
+
+    public function testTitleOptionCustomizesRenderedOutput(): void
+    {
+        $tester = $this->buildCommandTester();
+        $exitCode = $tester->execute(
+            [
+                'path' => sys_get_temp_dir(),
+                '--title' => 'Custom Scan Title',
+            ],
+            [
+                'capture_stderr_separately' => true,
+            ],
+        );
+
+        self::assertSame(0, $exitCode);
+        self::assertSame('', $tester->getErrorOutput());
+        self::assertStringContainsString('Custom Scan Title', $tester->getDisplay());
+    }
+
+    // -------------------------------------------------------------------------
     // Helper: build a CommandTester with a fake ScannerServiceFactory
     // -------------------------------------------------------------------------
 
